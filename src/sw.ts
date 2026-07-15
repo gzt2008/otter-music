@@ -79,8 +79,23 @@ setCatchHandler(async ({ event }) => {
         new Response("Offline", { status: 503 })
       );
     }
-    // 其他请求直接走网络
-    return fetch(request);
+    // 非导航请求走网络，但检测 SPA fallback 返回 HTML 的情况
+    const response = await fetch(request);
+    const contentType = response.headers.get("content-type") || "";
+    // 如果请求的是 JS/CSS 资源但服务器返回了 HTML（_redirects catch-all 导致），
+    // 说明文件不存在，返回 404 而非把 HTML 当资源返回
+    if (
+      response.ok &&
+      contentType.includes("text/html") &&
+      !request.url.endsWith(".html") &&
+      !request.url.endsWith("/")
+    ) {
+      return new Response(`Asset not found: ${request.url}`, {
+        status: 404,
+        statusText: "Not Found",
+      });
+    }
+    return response;
   }
   return new Response("Service Unavailable", { status: 503 });
 });

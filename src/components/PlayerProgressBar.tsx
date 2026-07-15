@@ -101,27 +101,45 @@ export function PlayerProgressBar({
         onMouseDown={(e) => handleStart(e.clientX)}
         onTouchStart={(e) => handleStart(e.touches[0].clientX)}
       >
-        <div className="relative w-full h-1.5 group-hover:h-2 transition-all rounded-full bg-white/20">
+        <div className="relative w-full h-1 group-hover:h-1.5 transition-all duration-300 rounded-full bg-white/10 overflow-visible">
           <div
             className={cn(
-              "absolute inset-y-0 left-0 bg-white rounded-full flex items-center justify-end shadow-[0_0_10px_rgba(255,255,255,0.3)]",
-              !isDragging && "transition-all"
+              "absolute inset-y-0 left-0 rounded-full flex items-center justify-end",
+              !isDragging && "transition-[width] duration-150"
             )}
-            style={{ width: `${displayProgress}%` }}
+            style={{
+              width: `${displayProgress}%`,
+              background:
+                "linear-gradient(90deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.9) 100%)",
+              boxShadow:
+                "0 0 12px rgba(255,255,255,0.3), 0 0 4px rgba(255,255,255,0.2)",
+            }}
           >
             {/* 拖拽/悬停时显示的小圆点指示器 */}
             <div
               className={cn(
-                "w-3 h-3 bg-white rounded-full shadow-md translate-x-1.5 transition-opacity duration-200",
+                "w-3.5 h-3.5 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)] translate-x-1.5 transition-all duration-200",
                 isDragging
                   ? "opacity-100 scale-110"
                   : "opacity-0 group-hover:opacity-100"
               )}
             />
           </div>
+          {/* 发光尾迹 */}
+          {displayProgress > 0 && displayProgress < 100 && (
+            <div
+              className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full pointer-events-none"
+              style={{
+                left: `${displayProgress}%`,
+                background:
+                  "radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)",
+                animation: "progress-glow 2s ease-in-out infinite",
+              }}
+            />
+          )}
         </div>
       </div>
-      <div className="relative flex justify-between text-xs text-white/60 font-medium mt-1.5 px-0.5 tracking-wider">
+      <div className="relative flex justify-between text-xs text-white/40 font-medium mt-2 px-0.5 tracking-wider">
         <span
           className={cn(
             "flex items-baseline gap-0.5",

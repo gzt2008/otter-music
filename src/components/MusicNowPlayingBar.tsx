@@ -87,19 +87,24 @@ export function MusicNowPlayingBar({
     <div className={cn(isTab ? "px-3" : "w-full")}>
       {/* Desktop progress bar */}
       {!isTab && duration > 0 && (
-        <div className="h-0.5 w-full bg-muted/30">
+        <div className="h-[3px] w-full bg-white/10">
           <div
-            className="h-full bg-primary transition-[width] duration-300"
-            style={{ width: `${progress}%` }}
+            className="h-full transition-[width] duration-300"
+            style={{
+              width: `${progress}%`,
+              background:
+                "linear-gradient(90deg, rgba(255,255,255,0.4), rgba(255,255,255,0.8))",
+              boxShadow: "0 0 8px rgba(255,255,255,0.2)",
+            }}
           />
         </div>
       )}
       <div
         className={cn(
-          "flex items-center backdrop-blur-sm transition-all duration-300",
+          "flex items-center backdrop-blur-xl transition-all duration-300",
           isTab
-            ? "gap-2 px-2 py-1.5 rounded-2xl bg-card/95 shadow-md border border-border/50"
-            : "gap-3 px-4 py-2.5 bg-background/95 border-t border-border/50 pb-[calc(0.75rem+var(--safe-area-bottom))]"
+            ? "gap-2 px-2 py-1.5 rounded-2xl bg-white/[0.06] shadow-md border border-white/[0.08]"
+            : "gap-3 px-4 py-2.5 bg-black/40 border-t border-white/[0.06] pb-[calc(0.75rem+var(--safe-area-bottom))]"
         )}
       >
         {/* 不含列表按钮，避免遮罩层关闭时 ghost click 误触发全屏 */}
@@ -110,7 +115,7 @@ export function MusicNowPlayingBar({
           {/* 专辑封面 */}
           <div
             className={cn(
-              "relative shrink-0 overflow-hidden rounded-md transition-all duration-300 shadow-sm",
+              "relative shrink-0 overflow-hidden rounded-xl transition-all duration-300 shadow-sm ring-1 ring-white/[0.08]",
               isTab ? "h-8 w-8" : "h-11 w-11"
             )}
           >

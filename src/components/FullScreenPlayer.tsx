@@ -131,6 +131,40 @@ const BackgroundLayer = memo(
           />
         </div>
 
+        {/* 浮动光球层 — 纯 CSS 动画，营造沉浸氛围 */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+          <div
+            className="absolute w-48 h-48 rounded-full blur-3xl"
+            style={{
+              top: "10%",
+              left: "15%",
+              background:
+                "radial-gradient(circle, hsla(270, 60%, 50%, 0.3) 0%, transparent 70%)",
+              animation: "float-orb-1 12s ease-in-out infinite",
+            }}
+          />
+          <div
+            className="absolute w-64 h-64 rounded-full blur-3xl"
+            style={{
+              top: "50%",
+              right: "10%",
+              background:
+                "radial-gradient(circle, hsla(200, 70%, 45%, 0.25) 0%, transparent 70%)",
+              animation: "float-orb-2 15s ease-in-out infinite",
+            }}
+          />
+          <div
+            className="absolute w-40 h-40 rounded-full blur-3xl"
+            style={{
+              bottom: "15%",
+              left: "30%",
+              background:
+                "radial-gradient(circle, hsla(300, 50%, 45%, 0.2) 0%, transparent 70%)",
+              animation: "float-orb-3 18s ease-in-out infinite",
+            }}
+          />
+        </div>
+
         {/* 噪点层 */}
         <div className="absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none select-none bg-[url('data:image/svg+xml,...')]" />
       </div>
@@ -231,6 +265,8 @@ export function FullScreenPlayer({
     return dominant ? createBackgroundColor(dominant) : null;
   }, [swatches]);
 
+  const isMobile = useIsMobile();
+
   const playTrack = (index: number) => setCurrentIndexAndPlay(index);
 
   const handleClearQueue = () => {
@@ -265,10 +301,8 @@ export function FullScreenPlayer({
     setCurrentIndexAndPlay((currentIndex + 1) % queue.length);
   };
 
-  const isMobile = useIsMobile();
-
   const trackInfo = (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between px-1 py-3 relative">
       <div
         className={cn("min-w-0 flex-1 cursor-pointer select-none")}
         onMouseDown={trackInfoPressHandlers.onMouseDown}
@@ -280,7 +314,7 @@ export function FullScreenPlayer({
       >
         <h2
           className={cn(
-            "truncate font-semibold text-white",
+            "truncate font-semibold text-white drop-shadow-sm",
             isMobile ? "text-xl" : "text-lg"
           )}
         >
@@ -288,18 +322,18 @@ export function FullScreenPlayer({
         </h2>
         <p
           className={cn(
-            "truncate text-white/60 mt-1",
+            "truncate text-white/50 mt-0.5",
             isMobile ? "text-sm" : "text-xs"
           )}
         >
           {currentTrack?.artist?.join(", ") || "未知歌手"}
         </p>
       </div>
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-0.5 shrink-0">
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 text-white/70 hover:bg-white/10 hover:text-white"
+          className="h-10 w-10 text-white/50 hover:bg-white/10 hover:text-white transition-all duration-300 hover:scale-110 active:scale-90"
           onClick={(e) => {
             e.stopPropagation();
             handleToggleLike();
@@ -307,8 +341,10 @@ export function FullScreenPlayer({
         >
           <Heart
             className={cn(
-              "h-6 w-6 transition-all",
-              isCurrentTrackFavorite && "fill-primary text-primary"
+              "h-5 w-5 transition-all duration-300",
+              isCurrentTrackFavorite
+                ? "fill-rose-500 text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.5)]"
+                : ""
             )}
           />
         </Button>
@@ -324,7 +360,7 @@ export function FullScreenPlayer({
               }
               isFavorite={isCurrentTrackFavorite}
               onToggleLike={() => handleToggleLike()}
-              triggerClassName="h-10 w-10 text-white/70 hover:bg-white/10 hover:text-white"
+              triggerClassName="h-10 w-10 text-white/50 hover:bg-white/10 hover:text-white transition-all duration-300"
               onNavigate={() => onClose()}
             />
             <AddToPlaylistDrawer
@@ -365,22 +401,55 @@ export function FullScreenPlayer({
   const controlButtons = (
     <div
       className={cn(
-        "flex items-center justify-between",
+        "flex items-center justify-between relative",
         isMobile
           ? "px-8 py-6 pb-[calc(2rem+env(safe-area-inset-bottom))]"
           : "px-6 py-4"
       )}
     >
-      <Button variant="ghost" size="icon" className="h-12 w-12 transition-colors text-white/70 hover:text-white hover:bg-white/10" onClick={handleModeToggle}>
+      {/* 玻璃面板底衬 */}
+      <div className="absolute inset-0 bg-white/[0.04] backdrop-blur-xl border-y border-white/[0.06] pointer-events-none" />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="relative z-10 h-12 w-12 transition-all duration-300 text-white/50 hover:text-white hover:bg-white/10 hover:scale-105 active:scale-95"
+        onClick={handleModeToggle}
+      >
         <ModeIcon isRepeat={isRepeat} isShuffle={isShuffle} />
       </Button>
-      <Button variant="ghost" size="icon" className="h-12 w-12 text-white/70 hover:bg-white/10 hover:text-white" onClick={handlePrev}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="relative z-10 h-12 w-12 text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 hover:scale-105 active:scale-95"
+        onClick={handlePrev}
+      >
         <SkipBack className="h-6 w-6 fill-current" />
       </Button>
-      <Button size="icon" className="h-16 w-16 rounded-full bg-white text-black shadow-lg hover:scale-105 transition-all active:scale-95" onClick={togglePlay} disabled={isLoading}>
-        {isLoading ? <Spinner className="h-7 w-7 text-black" /> : isPlaying ? <Pause className="h-7 w-7 fill-current" /> : <Play className="h-7 w-7 fill-current ml-1" />}
+      <Button
+        size="icon"
+        className={cn(
+          "relative z-10 h-16 w-16 rounded-full text-black transition-all duration-300 hover:scale-105 active:scale-90",
+          isPlaying
+            ? "bg-white animate-glow-pulse"
+            : "bg-white shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+        )}
+        onClick={togglePlay}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <Spinner className="h-7 w-7 text-black" />
+        ) : isPlaying ? (
+          <Pause className="h-7 w-7 fill-current" />
+        ) : (
+          <Play className="h-7 w-7 fill-current ml-1" />
+        )}
       </Button>
-      <Button variant="ghost" size="icon" className="h-12 w-12 text-white/70 hover:bg-white/10 hover:text-white" onClick={handleNext}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="relative z-10 h-12 w-12 text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 hover:scale-105 active:scale-95"
+        onClick={handleNext}
+      >
         <SkipForward className="h-6 w-6 fill-current" />
       </Button>
       <PlayerQueueDrawer
@@ -394,7 +463,11 @@ export function FullScreenPlayer({
         onRemove={handleRemoveFromQueue}
         onPlayTrack={playTrackAsNext}
         trigger={
-          <Button variant="ghost" size="icon" className="h-12 w-12 text-white/70 hover:bg-white/10 hover:text-white">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative z-10 h-12 w-12 text-white/50 hover:bg-white/10 hover:text-white transition-all duration-300 hover:scale-105 active:scale-95"
+          >
             <ListVideo className="h-5 w-5" />
           </Button>
         }
@@ -416,23 +489,54 @@ export function FullScreenPlayer({
       ) : (
         <div
           className={cn(
-            "relative aspect-square overflow-hidden rounded-3xl transition-transform duration-500 ring-1 ring-white/5",
-            isMobile ? "w-72 max-w-[320px]" : "w-64 max-w-[280px]",
-            isPlaying ? "scale-100" : "scale-[0.95]"
+            "relative flex items-center justify-center",
+            isMobile
+              ? "w-72 max-w-[320px] aspect-square"
+              : "w-64 max-w-[280px] aspect-square"
           )}
-          style={{
-            boxShadow:
-              fullScreenBackgroundMode === "theme" && hslColor
-                ? `0 30px 60px -12px hsla(${hslColor[0]}, ${hslColor[1]}%, ${Math.max(0, hslColor[2] - 20)}%, 0.4)`
-                : "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-          }}
         >
-          <MusicCover
-            src={coverUrl}
-            alt={currentTrack?.name}
-            className="h-full w-full object-cover dark select-none touch-none"
-            iconClassName="h-16 w-16 text-white/30"
-          />
+          {/* 黑胶唱片旋转环 */}
+          <div
+            className={cn(
+              "absolute inset-[-8%] rounded-full",
+              isPlaying ? "animate-vinyl-spin" : "animate-vinyl-spin-paused"
+            )}
+            style={{
+              background:
+                "conic-gradient(from 0deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.02) 75%, rgba(255,255,255,0.06) 100%)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            {/* 唱片纹理环 */}
+            <div className="absolute inset-[15%] rounded-full border border-white/[0.04]" />
+            <div className="absolute inset-[25%] rounded-full border border-white/[0.03]" />
+            <div className="absolute inset-[35%] rounded-full border border-white/[0.04]" />
+            {/* 中心圆点 */}
+            <div className="absolute inset-[42%] rounded-full bg-white/10 border border-white/10" />
+          </div>
+
+          {/* 封面主体 — 玻璃质感 */}
+          <div
+            className={cn(
+              "relative aspect-square overflow-hidden rounded-3xl transition-all duration-700",
+              isPlaying ? "scale-100" : "scale-[0.93]"
+            )}
+            style={{
+              boxShadow: hslColor
+                ? `0 30px 60px -12px hsla(${hslColor[0]}, ${hslColor[1]}%, ${Math.max(0, hslColor[2] - 20)}%, 0.5), 0 0 80px -20px hsla(${hslColor[0]}, ${hslColor[1]}%, ${hslColor[2]}%, 0.15)`
+                : "0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 60px -20px rgba(255, 255, 255, 0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}
+          >
+            <MusicCover
+              src={coverUrl}
+              alt={currentTrack?.name}
+              className="h-full w-full object-cover dark select-none touch-none"
+              iconClassName="h-16 w-16 text-white/30"
+            />
+            {/* 顶部高光 */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] via-transparent to-transparent pointer-events-none" />
+          </div>
         </div>
       )}
     </div>
@@ -473,7 +577,7 @@ export function FullScreenPlayer({
           <Button
             variant="ghost"
             size="icon"
-            className="h-12 w-12 text-white/60 hover:bg-white/10 hover:text-white"
+            className="h-12 w-12 text-white/40 hover:bg-white/10 hover:text-white transition-all duration-300 hover:scale-110 active:scale-90"
             onClick={onClose}
           >
             <ChevronDown className="h-6 w-6" />
@@ -481,7 +585,7 @@ export function FullScreenPlayer({
           <Button
             variant="ghost"
             size="sm"
-            className="text-xs tracking-widest text-white/50 hover:text-white hover:bg-white/10 h-8 px-3"
+            className="text-xs tracking-widest text-white/40 hover:text-white hover:bg-white/10 h-8 px-3 rounded-lg bg-white/[0.04] backdrop-blur-sm border border-white/[0.06] transition-all duration-300"
             onClick={() => setQualityDrawerOpen(true)}
           >
             {!showLyrics && getQualityShortLabel(quality)}
@@ -489,7 +593,7 @@ export function FullScreenPlayer({
           <Button
             variant="ghost"
             size="icon"
-            className="h-12 w-12 text-white/60 hover:bg-white/10 hover:text-white"
+            className="h-12 w-12 text-white/40 hover:bg-white/10 hover:text-white transition-all duration-300 hover:scale-110 active:scale-90"
             onClick={handleShare}
           >
             <SquareArrowOutUpRight className="h-5 w-5" />
@@ -511,7 +615,11 @@ export function FullScreenPlayer({
       <DialogContent
         showCloseButton={false}
         aria-describedby={undefined}
-        className="sm:max-w-[900px] h-[600px] p-0 bg-zinc-950 border-white/10 overflow-hidden block gap-0"
+        className="sm:max-w-[900px] h-[600px] p-0 bg-zinc-950/95 backdrop-blur-2xl border-white/[0.08] overflow-hidden block gap-0"
+        style={{
+          boxShadow:
+            "0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 80px -20px rgba(123, 47, 190, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
+        }}
         onPointerDownOutside={(e) => e.preventDefault()}
       >
         <DialogTitle>
@@ -524,14 +632,14 @@ export function FullScreenPlayer({
         />
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 h-8 w-8 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+          className="absolute top-4 right-4 z-20 h-8 w-8 flex items-center justify-center rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-all duration-300 hover:scale-110 active:scale-90"
         >
           <X className="h-4 w-4" />
         </button>
         <div className="absolute top-4 left-4 z-20">
           <button
             onClick={() => setQualityDrawerOpen(true)}
-            className="text-xs tracking-widest text-white/50 hover:text-white px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors"
+            className="text-xs tracking-widest text-white/40 hover:text-white px-3 py-1.5 rounded-lg bg-white/[0.04] backdrop-blur-sm border border-white/[0.06] hover:bg-white/10 transition-all duration-300"
           >
             {getQualityShortLabel(quality)}
           </button>
@@ -545,7 +653,7 @@ export function FullScreenPlayer({
             <div className="shrink-0 px-6">{progressBar}</div>
             <div className="shrink-0">{controlButtons}</div>
           </div>
-          <div className="flex-1 min-w-0 border-l border-white/5">
+          <div className="flex-1 min-w-0 border-l border-white/[0.06] bg-white/[0.02]">
             <div className="h-full">
               <LyricsPanel track={currentTrack} active={isFullScreen} />
             </div>

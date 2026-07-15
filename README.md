@@ -9,19 +9,6 @@
   基于 <a href="https://music-api.gdstudio.xyz/api.php">GD Studio's API</a> 的多音源聚合音乐播放器
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" />
-  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white" />
-  <img src="https://img.shields.io/badge/Vite-7.x-646CFF?logo=vite&logoColor=white" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-4.x-06B6D4?logo=tailwindcss&logoColor=white" />
-  <img src="https://img.shields.io/badge/Capacitor-8-119EFF?logo=capacitor&logoColor=white" />
-</p>
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/a20b5785-c4b3-4f44-86d9-f07350caf873" width="45%" />
-  <img src="https://github.com/user-attachments/assets/475cb456-ed0f-40e9-829d-a746dffd2688" width="45%" />
-</p>
-
 ## 核心功能
 
 - **多音源聚合与回退**：支持多源检索与播放失败回退（本地下载/缓存/直连/代理/下一首）。
@@ -154,12 +141,11 @@ shared/                     # 跨端共享类型
 
 ## TODO
 
-...
+[]音频可视化
 
 ### Not TODO
 
 - 不接入 JOOX、KUWO 等官方接口：当前网易云官方接口够用，无需增加复杂度；接入 JOOX 还需要做代理
-- 不接入 musicfree/洛雪 的插件生态（可以手动维护其音源）
 - 不做网易云「每日推荐」（已有「私人雷达」）
 - 不做 B 站 UP 主歌手页（风控校验容易失败）
 - 不做视频 MV 模式（避免臃肿，专注于听歌）

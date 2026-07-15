@@ -25,6 +25,9 @@
   --ring: hsl(158 100% 31%);
   --glass-bg: rgba(255, 255, 255, 0.65);
   --glass-border: rgba(0, 0, 0, 0.05);
+  --liquid-glass-1: rgba(255, 255, 255, 0.12);
+  --liquid-glass-2: rgba(255, 255, 255, 0.06);
+  --liquid-glass-3: rgba(255, 255, 255, 0.03);
   --radius: 0.75rem;
   --sidebar: hsl(205 100% 98%);
   --sidebar-foreground: hsl(205 25% 13%);
@@ -61,6 +64,9 @@
   --ring: hsl(169 37% 52%);
   --glass-bg: rgba(18, 24, 36, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
+  --liquid-glass-1: rgba(255, 255, 255, 0.08);
+  --liquid-glass-2: rgba(255, 255, 255, 0.04);
+  --liquid-glass-3: rgba(255, 255, 255, 0.02);
   --sidebar: hsl(214 42% 7%);
   --sidebar-foreground: hsl(215 27% 91%);
   --sidebar-primary: hsl(161 40% 54%);
@@ -220,8 +226,8 @@
     mask-image: linear-gradient(
       to bottom,
       transparent 0%,
-      black 15%,
-      black 85%,
+      black 20%,
+      black 80%,
       transparent 100%
     );
   }
@@ -281,11 +287,11 @@
 }
 
 .animate-vinyl-spin {
-  animation: vinyl-spin 8s linear infinite;
+  animation: vinyl-spin 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .animate-vinyl-spin-paused {
-  animation: vinyl-spin 8s linear infinite;
+  animation: vinyl-spin 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   animation-play-state: paused;
 }
 
@@ -305,7 +311,7 @@
 }
 
 .animate-glow-pulse {
-  animation: glow-pulse 2.5s ease-in-out infinite;
+  animation: glow-pulse 3s ease-in-out infinite;
 }
 
 /* Ambient floating orbs */
@@ -431,4 +437,144 @@
 .animate-marquee {
   animation: marquee var(--duration, 20s) linear infinite;
   will-change: transform;
+}
+
+/* ========== Liquid Glass Player Animations ========== */
+
+/* Cover breathing — subtle scale pulse while playing */
+@keyframes cover-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.015);
+  }
+}
+
+.animate-cover-breathe {
+  animation: cover-breathe 4s ease-in-out infinite;
+}
+
+/* Liquid gradient shift — slow rotation for fluid background */
+@keyframes liquid-shift {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  33% {
+    transform: rotate(120deg) scale(1.05);
+  }
+  66% {
+    transform: rotate(240deg) scale(0.98);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.animate-liquid-shift {
+  animation: liquid-shift 20s ease-in-out infinite;
+}
+
+/* Glass shimmer — light sweep across glass edges */
+@keyframes glass-shimmer {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-15deg);
+  }
+}
+
+.animate-glass-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.06) 45%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.06) 55%,
+    transparent 60%
+  );
+  animation: glass-shimmer 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Orb morph — enhanced floating with scale + blur change */
+@keyframes orb-morph-1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    filter: blur(48px);
+    opacity: 0.2;
+  }
+  25% {
+    transform: translate(40px, -50px) scale(1.15);
+    filter: blur(56px);
+    opacity: 0.28;
+  }
+  50% {
+    transform: translate(-25px, -80px) scale(0.9);
+    filter: blur(44px);
+    opacity: 0.18;
+  }
+  75% {
+    transform: translate(50px, -35px) scale(1.08);
+    filter: blur(52px);
+    opacity: 0.24;
+  }
+}
+
+@keyframes orb-morph-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    filter: blur(56px);
+    opacity: 0.15;
+  }
+  33% {
+    transform: translate(-50px, 40px) scale(1.2);
+    filter: blur(64px);
+    opacity: 0.22;
+  }
+  66% {
+    transform: translate(30px, -60px) scale(0.88);
+    filter: blur(48px);
+    opacity: 0.12;
+  }
+}
+
+@keyframes orb-morph-3 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.05);
+    filter: blur(44px);
+    opacity: 0.16;
+  }
+  40% {
+    transform: translate(60px, 25px) scale(0.92);
+    filter: blur(52px);
+    opacity: 0.24;
+  }
+  80% {
+    transform: translate(-35px, -50px) scale(1.12);
+    filter: blur(40px);
+    opacity: 0.14;
+  }
+}
+
+@keyframes orb-morph-4 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(0.95);
+    filter: blur(50px);
+    opacity: 0.12;
+  }
+  50% {
+    transform: translate(-40px, -30px) scale(1.1);
+    filter: blur(58px);
+    opacity: 0.2;
+  }
 }

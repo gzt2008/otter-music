@@ -27,7 +27,11 @@ export function PlaybackSpeedSetting() {
         onClick={handleOpenDrawer}
       />
 
-      <PlaybackSpeedDrawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
+      <PlaybackSpeedDrawer
+        open={isDrawerOpen}
+        onOpenChange={setIsDrawerOpen}
+        compact
+      />
     </>
   );
 }

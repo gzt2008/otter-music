@@ -89,3 +89,27 @@ export function createBackgroundColor(dominant: HSL): HSL {
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
+
+/**
+ * 生成液体玻璃三层渐变所需的 HSL 色彩变体
+ * 返回 [layer1, layer2, layer3]，基于原始主色（非暗化后的背景色）
+ * 产生高饱和、中等亮度的色彩，确保在深色背景上可见
+ */
+export function createLiquidGlassColors(dominant: HSL): [HSL, HSL, HSL] {
+  const [h, s, l] = dominant;
+  // 基于原始主色生成，亮度提升至 35-55% 区间以确保在深色背景上可见
+  return [
+    [h, clamp(s * 0.85, 35, 70), clamp(l * 1.3, 35, 55)],
+    [h + 15, clamp(s * 0.7, 30, 60), clamp(l * 1.1, 30, 48)],
+    [h - 10, clamp(s * 0.55, 25, 50), clamp(l * 0.9, 25, 40)],
+  ];
+}
+
+/**
+ * 将 HSL 色彩转换为光球使用的 HSLA 值
+ * 返回 [h, s, l, a] 数组，可直接用于 CSS
+ */
+export function createOrbColor(dominant: HSL, alpha: number = 0.3): string {
+  const [h, s, l] = dominant;
+  return `hsla(${h}, ${clamp(s * 0.9, 25, 70)}%, ${clamp(l * 1.5, 40, 65)}%, ${alpha})`;
+}

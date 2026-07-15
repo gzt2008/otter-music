@@ -253,6 +253,7 @@ export function NeteaseLogin() {
           setShowLoginDialog(open);
           if (!open) resetDialogState();
         }}
+        compact
       >
         <DrawerContent className="max-h-[90vh]">
           <DrawerHeader className="mb-2 px-4">
@@ -388,7 +389,7 @@ export function NeteaseLogin() {
       </Drawer>
 
       {/* 登录后点击头像的用户操作面板 */}
-      <Drawer open={showUserDrawer} onOpenChange={setShowUserDrawer}>
+      <Drawer open={showUserDrawer} onOpenChange={setShowUserDrawer} compact>
         <DrawerContent>
           <DrawerHeader className="text-center px-4 mb-2">
             <DrawerTitle>{user?.nickname}</DrawerTitle>

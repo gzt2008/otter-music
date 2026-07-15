@@ -94,7 +94,7 @@ export function ApiUrlConfig() {
         onClick={handleOpen}
       />
 
-      <Drawer open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Drawer open={dialogOpen} onOpenChange={setDialogOpen} compact>
         <DrawerContent className="max-h-[85vh]">
           <DrawerHeader>
             <DrawerTitle>自定义 API 地址</DrawerTitle>

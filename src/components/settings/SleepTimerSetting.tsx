@@ -57,7 +57,11 @@ export function SleepTimerSetting() {
         }
       />
 
-      <SleepTimerDrawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
+      <SleepTimerDrawer
+        open={isDrawerOpen}
+        onOpenChange={setIsDrawerOpen}
+        compact
+      />
     </>
   );
 }

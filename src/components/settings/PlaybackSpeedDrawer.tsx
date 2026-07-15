@@ -12,11 +12,13 @@ import { useMusicStore } from "@/store/music-store";
 interface PlaybackSpeedDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  compact?: boolean;
 }
 
 export function PlaybackSpeedDrawer({
   open,
   onOpenChange,
+  compact,
 }: PlaybackSpeedDrawerProps) {
   const playbackSpeed = useMusicStore((s) => s.playbackSpeed);
   const setPlaybackSpeed = useMusicStore((s) => s.setPlaybackSpeed);
@@ -26,7 +28,7 @@ export function PlaybackSpeedDrawer({
   };
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={onOpenChange} compact={compact}>
       <DrawerContent className="outline-none">
         <DrawerHeader className="px-5 pt-6 pb-2">
           <DrawerTitle className="text-lg font-semibold text-center">

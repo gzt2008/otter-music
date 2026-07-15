@@ -87,26 +87,29 @@ export function MusicNowPlayingBar({
     <div className={cn(isTab ? "px-3" : "w-full")}>
       {/* Desktop progress bar */}
       {!isTab && duration > 0 && (
-        <div className="h-[3px] w-full bg-white/10">
+        <div className="h-[3px] w-full bg-white/[0.05]">
           <div
             className="h-full transition-[width] duration-300"
             style={{
               width: `${progress}%`,
               background:
-                "linear-gradient(90deg, rgba(255,255,255,0.4), rgba(255,255,255,0.8))",
-              boxShadow: "0 0 8px rgba(255,255,255,0.2)",
+                "linear-gradient(90deg, rgba(255,255,255,0.35), rgba(255,255,255,0.75))",
+              boxShadow:
+                "0 0 10px rgba(255,255,255,0.2), 0 0 4px rgba(255,255,255,0.15)",
             }}
           />
         </div>
       )}
       <div
         className={cn(
-          "flex items-center backdrop-blur-xl transition-all duration-300",
+          "flex items-center backdrop-blur-xl transition-all duration-300 relative overflow-hidden",
           isTab
-            ? "gap-2 px-2 py-1.5 rounded-2xl bg-white/[0.06] shadow-md border border-white/[0.08]"
-            : "gap-3 px-4 py-2.5 bg-black/40 border-t border-white/[0.06] pb-[calc(0.75rem+var(--safe-area-bottom))]"
+            ? "gap-2 px-2 py-1.5 rounded-2xl bg-white/[0.03] shadow-md border border-white/[0.06]"
+            : "gap-3 px-4 py-2.5 bg-black/25 border-t border-white/[0.04] pb-[calc(0.75rem+var(--safe-area-bottom))]"
         )}
       >
+        {/* 液体玻璃顶部高光线 */}
+        <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
         {/* 不含列表按钮，避免遮罩层关闭时 ghost click 误触发全屏 */}
         <div
           className="flex items-center flex-1 min-w-0 cursor-pointer"
@@ -118,6 +121,10 @@ export function MusicNowPlayingBar({
               "relative shrink-0 overflow-hidden rounded-xl transition-all duration-300 shadow-sm ring-1 ring-white/[0.08]",
               isTab ? "h-8 w-8" : "h-11 w-11"
             )}
+            style={{
+              boxShadow:
+                "0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06)",
+            }}
           >
             <MusicCover
               src={coverUrl}
@@ -164,7 +171,7 @@ export function MusicNowPlayingBar({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={isTab ? "2" : "2.5"}
-                className="text-muted/30 transition-all duration-300"
+                className="text-white/10 transition-all duration-300"
               />
               {/* 进度圆环 - 从上方开始 */}
               <circle
@@ -175,7 +182,8 @@ export function MusicNowPlayingBar({
                 stroke="currentColor"
                 strokeWidth={isTab ? "2" : "2.5"}
                 strokeLinecap="round"
-                className="text-primary transition-[stroke-dashoffset] duration-300"
+                className="text-white/85 transition-[stroke-dashoffset] duration-300"
+                style={{ filter: "drop-shadow(0 0 3px rgba(255,255,255,0.4))" }}
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
                 transform="rotate(-90 20 20)"
@@ -184,7 +192,7 @@ export function MusicNowPlayingBar({
 
             {/* 播放按钮 */}
             <button
-              className="absolute inset-0 flex items-center justify-center text-primary hover:text-primary/80 transition-colors focus:outline-none"
+              className="absolute inset-0 flex items-center justify-center text-white/90 hover:text-white transition-colors focus:outline-none"
               onClick={(e) => {
                 e.stopPropagation();
                 togglePlay();

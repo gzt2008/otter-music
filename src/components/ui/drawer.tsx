@@ -2,17 +2,30 @@
 
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 import { cn } from "@/lib/utils";
 import { useExitLayerStore } from "@/hooks/useExitLayer";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+/**
+ * compact 模式：桌面端用居中小窗口（Dialog），移动端仍用底部抽屉。
+ * 非 compact（默认）：桌面端右侧抽屉，移动端底部抽屉。
+ */
+const CompactDrawerContext = React.createContext(false);
+
+type DrawerProps = React.ComponentProps<typeof DrawerPrimitive.Root> & {
+  /** true = 桌面端渲染为居中小窗口，移动端仍为底部抽屉 */
+  compact?: boolean;
+};
+
 function Drawer({
   open,
   onOpenChange,
   direction,
+  compact,
   ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Root>) {
+}: DrawerProps) {
   const isMobile = useIsMobile();
   const push = useExitLayerStore((s) => s.push);
   const pop = useExitLayerStore((s) => s.pop);
@@ -31,36 +44,60 @@ function Drawer({
     };
   }, [open, push, pop]);
 
-  // On desktop, default to right-side panel instead of bottom drawer.
-  // Callers can still override by passing direction explicitly.
+  // compact + 桌面端 → Dialog 居中窗口
+  if (compact && !isMobile) {
+    return (
+      <CompactDrawerContext.Provider value={true}>
+        <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+          {props.children}
+        </DialogPrimitive.Root>
+      </CompactDrawerContext.Provider>
+    );
+  }
+
+  // 默认：vaul 抽屉
   const resolvedDirection = direction ?? (isMobile ? "bottom" : "right");
 
   return (
-    <DrawerPrimitive.Root
-      data-slot="drawer"
-      open={open}
-      onOpenChange={onOpenChange}
-      direction={resolvedDirection}
-      {...props}
-    />
+    <CompactDrawerContext.Provider value={false}>
+      <DrawerPrimitive.Root
+        data-slot="drawer"
+        open={open}
+        onOpenChange={onOpenChange}
+        direction={resolvedDirection}
+        {...props}
+      />
+    </CompactDrawerContext.Provider>
   );
 }
 
 function DrawerTrigger({
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Trigger>) {
+  const isCompact = React.useContext(CompactDrawerContext);
+  if (isCompact) {
+    return <DialogPrimitive.Trigger data-slot="drawer-trigger" {...props} />;
+  }
   return <DrawerPrimitive.Trigger data-slot="drawer-trigger" {...props} />;
 }
 
 function DrawerPortal({
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Portal>) {
+  const isCompact = React.useContext(CompactDrawerContext);
+  if (isCompact) {
+    return <DialogPrimitive.Portal data-slot="drawer-portal" {...props} />;
+  }
   return <DrawerPrimitive.Portal data-slot="drawer-portal" {...props} />;
 }
 
 function DrawerClose({
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Close>) {
+  const isCompact = React.useContext(CompactDrawerContext);
+  if (isCompact) {
+    return <DialogPrimitive.Close data-slot="drawer-close" {...props} />;
+  }
   return <DrawerPrimitive.Close data-slot="drawer-close" {...props} />;
 }
 
@@ -68,6 +105,20 @@ function DrawerOverlay({
   className,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Overlay>) {
+  const isCompact = React.useContext(CompactDrawerContext);
+  if (isCompact) {
+    return (
+      <DialogPrimitive.Overlay
+        data-slot="drawer-overlay"
+        className={cn(
+          "fixed inset-0 z-50 bg-black/50",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+          className
+        )}
+        {...props}
+      />
+    );
+  }
   return (
     <DrawerPrimitive.Overlay
       data-slot="drawer-overlay"
@@ -85,6 +136,31 @@ function DrawerContent({
   children,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Content>) {
+  const isCompact = React.useContext(CompactDrawerContext);
+
+  if (isCompact) {
+    return (
+      <DialogPrimitive.Portal data-slot="drawer-portal">
+        <DrawerOverlay />
+        <DialogPrimitive.Content
+          data-slot="drawer-content"
+          className={cn(
+            "fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2",
+            "bg-background w-[calc(100%-2rem)] max-w-sm rounded-lg border shadow-lg p-0 overflow-hidden",
+            "data-[state=open]:animate-in data-[state=closed]:animate-out",
+            "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+            "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+            "duration-200",
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    );
+  }
+
   return (
     <DrawerPortal data-slot="drawer-portal">
       <DrawerOverlay />
@@ -108,11 +184,15 @@ function DrawerContent({
 }
 
 function DrawerHeader({ className, ...props }: React.ComponentProps<"div">) {
+  const isCompact = React.useContext(CompactDrawerContext);
   return (
     <div
       data-slot="drawer-header"
       className={cn(
-        "flex flex-col gap-0.5 p-4 group-data-[vaul-drawer-direction=bottom]/drawer-content:text-center group-data-[vaul-drawer-direction=top]/drawer-content:text-center md:gap-1.5 md:text-left",
+        "flex flex-col gap-0.5 p-4",
+        isCompact
+          ? "text-center md:gap-1.5"
+          : "group-data-[vaul-drawer-direction=bottom]/drawer-content:text-center group-data-[vaul-drawer-direction=top]/drawer-content:text-center md:gap-1.5 md:text-left",
         className
       )}
       {...props}
@@ -134,6 +214,16 @@ function DrawerTitle({
   className,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Title>) {
+  const isCompact = React.useContext(CompactDrawerContext);
+  if (isCompact) {
+    return (
+      <DialogPrimitive.Title
+        data-slot="drawer-title"
+        className={cn("text-foreground font-semibold", className)}
+        {...props}
+      />
+    );
+  }
   return (
     <DrawerPrimitive.Title
       data-slot="drawer-title"
@@ -147,6 +237,16 @@ function DrawerDescription({
   className,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Description>) {
+  const isCompact = React.useContext(CompactDrawerContext);
+  if (isCompact) {
+    return (
+      <DialogPrimitive.Description
+        data-slot="drawer-description"
+        className={cn("text-muted-foreground text-sm", className)}
+        {...props}
+      />
+    );
+  }
   return (
     <DrawerPrimitive.Description
       data-slot="drawer-description"

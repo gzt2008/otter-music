@@ -76,6 +76,7 @@ export function SyncConfig() {
             setTimeout(() => inputRef.current?.focus(), 50);
           }
         }}
+        compact
       >
         <DrawerContent className="max-h-[85vh]">
           <DrawerHeader>
@@ -107,7 +108,11 @@ export function SyncConfig() {
                 清除密钥
               </Button>
             )}
-            <Button onClick={handleConfirm} disabled={!inputKey.trim()} className="h-11">
+            <Button
+              onClick={handleConfirm}
+              disabled={!inputKey.trim()}
+              className="h-11"
+            >
               确认
             </Button>
           </DrawerFooter>

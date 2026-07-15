@@ -32,7 +32,7 @@ export function UpdateDialog({ open, onOpenChange }: UpdateDialogProps) {
   const neverChecked = lastCheckTime === 0;
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={onOpenChange} compact>
       <DrawerContent className="max-h-[85vh]">
         <DrawerHeader className="items-center pt-4">
           <img

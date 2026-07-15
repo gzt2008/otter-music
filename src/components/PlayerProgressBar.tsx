@@ -101,7 +101,7 @@ export function PlayerProgressBar({
         onMouseDown={(e) => handleStart(e.clientX)}
         onTouchStart={(e) => handleStart(e.touches[0].clientX)}
       >
-        <div className="relative w-full h-1 group-hover:h-1.5 transition-all duration-300 rounded-full bg-white/10 overflow-visible">
+        <div className="relative w-full h-1 group-hover:h-1.5 transition-all duration-300 rounded-full bg-white/[0.05] overflow-visible backdrop-blur-sm">
           <div
             className={cn(
               "absolute inset-y-0 left-0 rounded-full flex items-center justify-end",
@@ -110,36 +110,41 @@ export function PlayerProgressBar({
             style={{
               width: `${displayProgress}%`,
               background:
-                "linear-gradient(90deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.9) 100%)",
+                "linear-gradient(90deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.85) 100%)",
               boxShadow:
-                "0 0 12px rgba(255,255,255,0.3), 0 0 4px rgba(255,255,255,0.2)",
+                "0 0 14px rgba(255,255,255,0.25), 0 0 6px rgba(255,255,255,0.15)",
             }}
           >
-            {/* 拖拽/悬停时显示的小圆点指示器 */}
+            {/* 拖拽/悬停时显示的玻璃质感圆点指示器 */}
             <div
               className={cn(
-                "w-3.5 h-3.5 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)] translate-x-1.5 transition-all duration-200",
+                "w-4 h-4 bg-white rounded-full translate-x-2 transition-all duration-200",
                 isDragging
-                  ? "opacity-100 scale-110"
-                  : "opacity-0 group-hover:opacity-100"
+                  ? "opacity-100 scale-110 shadow-[0_0_12px_rgba(255,255,255,0.5),0_2px_8px_rgba(0,0,0,0.3)]"
+                  : "opacity-0 group-hover:opacity-100 shadow-[0_0_10px_rgba(255,255,255,0.4),0_2px_6px_rgba(0,0,0,0.25)]"
               )}
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.85) 100%)",
+                border: "1px solid rgba(255,255,255,0.9)",
+              }}
             />
           </div>
           {/* 发光尾迹 */}
           {displayProgress > 0 && displayProgress < 100 && (
             <div
-              className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full pointer-events-none"
+              className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full pointer-events-none"
               style={{
                 left: `${displayProgress}%`,
                 background:
-                  "radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)",
+                  "radial-gradient(circle, rgba(255,255,255,0.7) 0%, transparent 70%)",
                 animation: "progress-glow 2s ease-in-out infinite",
               }}
             />
           )}
         </div>
       </div>
-      <div className="relative flex justify-between text-xs text-white/40 font-medium mt-2 px-0.5 tracking-wider">
+      <div className="relative flex justify-between text-xs text-white/40 font-medium mt-2 px-0.5 tracking-wider tabular-nums">
         <span
           className={cn(
             "flex items-baseline gap-0.5",

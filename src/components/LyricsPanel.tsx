@@ -113,11 +113,11 @@ const LyricLineView = memo(function LyricLineView({
   return (
     <div
       className={cn(
-        "px-8 w-full max-w-xl transition-all duration-500 ease-out text-center cursor-pointer",
+        "px-8 w-full max-w-xl transition-all duration-600 ease-out text-center cursor-pointer",
         "origin-center will-change-transform",
         isActive
-          ? "text-white scale-110 drop-shadow-md opacity-100"
-          : "text-white/40 scale-100 hover:text-white/60 opacity-100"
+          ? "text-white scale-[1.05] drop-shadow-md opacity-100"
+          : "text-white/25 scale-100 hover:text-white/45 opacity-100"
       )}
     >
       <p className="text-lg font-medium leading-8 min-h-8 tracking-wide wrap-break-word">
@@ -126,8 +126,8 @@ const LyricLineView = memo(function LyricLineView({
       {line.ttext && (
         <p
           className={cn(
-            "mt-1.5 font-medium text-[15px] wrap-break-word transition-colors duration-500",
-            isActive ? "text-white/80" : "text-white/30"
+            "mt-1 font-medium text-[14px] wrap-break-word transition-colors duration-500",
+            isActive ? "text-white/60" : "text-white/20"
           )}
         >
           {line.ttext}

@@ -35,7 +35,7 @@ export function AutoMatchSuffixSetting() {
         onClick={() => setIsDrawerOpen(true)}
       />
 
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} compact>
         <DrawerContent className="outline-none">
           <DrawerHeader className="px-5 pt-6 pb-2">
             <DrawerTitle className="text-lg font-semibold text-center">

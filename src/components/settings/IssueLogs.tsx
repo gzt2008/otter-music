@@ -72,7 +72,7 @@ export function IssueLogs() {
         showChevron
       />
 
-      <Drawer open={isOpen} onOpenChange={handleOpen}>
+      <Drawer open={isOpen} onOpenChange={handleOpen} compact>
         <DrawerContent className="max-h-[85vh] flex flex-col">
           <DrawerHeader>
             <DrawerTitle>诊断日志</DrawerTitle>

@@ -16,11 +16,13 @@ import { formatTime } from "@/lib/utils/time";
 interface SleepTimerDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  compact?: boolean;
 }
 
 export function SleepTimerDrawer({
   open,
   onOpenChange,
+  compact,
 }: SleepTimerDrawerProps) {
   const duration = useMusicStore((s) => s.sleepTimerDuration);
   const setDuration = useMusicStore((s) => s.setSleepTimerDuration);
@@ -60,7 +62,7 @@ export function SleepTimerDrawer({
   };
 
   return (
-    <Drawer open={open} onOpenChange={handleOpenChange}>
+    <Drawer open={open} onOpenChange={handleOpenChange} compact={compact}>
       <DrawerContent
         className="outline-none"
         onClick={(e) => e.stopPropagation()}

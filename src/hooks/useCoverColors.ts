@@ -62,7 +62,7 @@ export function useCoverColors(url: string | null): UseCoverColorsResult {
     };
   }, [url]);
 
-  return { swatches, error };
+  return { swatches: url ? swatches : null, error: url ? error : null };
 }
 
 /** 将 Vibrant Palette 转换为 SwatchData 数组 */

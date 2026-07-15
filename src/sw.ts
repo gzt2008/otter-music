@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import { precacheAndRoute } from "workbox-precaching";
+import { precacheAndRoute, cleanupOutdatedCaches } from "workbox-precaching";
 import { registerRoute } from "workbox-routing";
 import { NetworkFirst, CacheFirst } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
@@ -11,6 +11,9 @@ declare let self: ServiceWorkerGlobalScope;
 // Auto-update: 立即激活新版本 Service Worker
 self.skipWaiting();
 clientsClaim();
+
+// 清理旧版本的 precache 缓存，避免部署新版本后旧文件名找不到
+cleanupOutdatedCaches();
 
 precacheAndRoute(self.__WB_MANIFEST);
 

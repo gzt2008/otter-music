@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 import { precacheAndRoute, cleanupOutdatedCaches } from "workbox-precaching";
-import { registerRoute } from "workbox-routing";
+import { registerRoute, setCatchHandler } from "workbox-routing";
 import { NetworkFirst, CacheFirst } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
 import { CacheableResponsePlugin } from "workbox-cacheable-response";
@@ -67,3 +67,20 @@ registerRoute(
     // ! 严禁使用 ignoreSearch， 避免B站音源缓存失效
   })
 );
+
+// 兜底：所有未匹配的请求回退到网络，防止 precache 中缺失的文件返回空响应
+setCatchHandler(async ({ event }) => {
+  if (event instanceof FetchEvent) {
+    const { request } = event;
+    // 导航请求回退到 index.html
+    if (request.mode === "navigate") {
+      return (
+        (await caches.match(new Request("/index.html"))) ??
+        new Response("Offline", { status: 503 })
+      );
+    }
+    // 其他请求直接走网络
+    return fetch(request);
+  }
+  return new Response("Service Unavailable", { status: 503 });
+});

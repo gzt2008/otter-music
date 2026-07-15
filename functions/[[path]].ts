@@ -3,7 +3,7 @@ import { handle } from "hono/cloudflare-pages";
 
 const handler = handle(app);
 
-// 资源文件扩展名，匹配到说明请求的是静态资源而非 SPA 路由
+// 资源文件扩展名
 const ASSET_EXT_RE =
   /\.(js|mjs|css|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot|map|wasm)(\?|$)/i;
 
@@ -15,13 +15,27 @@ export const onRequest: PagesFunction = async (ctx) => {
     res.status === 404 &&
     !res.headers.get("content-type")?.includes("application/json")
   ) {
-    // 资源文件请求：直接返回 404，避免 SPA fallback 把 index.html 当资源返回导致 MIME 错误
-    const pathname = new URL(ctx.request.url).pathname;
-    if (ASSET_EXT_RE.test(pathname)) {
-      return new Response("Not Found", { status: 404 });
+    // 先让 Pages 尝试匹配静态文件（sw.js 等真实存在的文件）
+    const nextRes = await ctx.next();
+    const nextCT = nextRes.headers.get("content-type") || "";
+
+    // 如果 Pages 找到了静态文件（200 且非 HTML），直接返回
+    if (nextRes.status === 200 && !nextCT.includes("text/html")) {
+      return nextRes;
     }
-    // SPA 路由请求：返回 index.html 支持客户端路由
-    return ctx.next();
+
+    // 如果 Pages 返回了 HTML（SPA fallback），而请求的是资源文件，
+    // 说明文件确实不存在，返回 404 避免 MIME 类型错误
+    const pathname = new URL(ctx.request.url).pathname;
+    if (nextCT.includes("text/html") && ASSET_EXT_RE.test(pathname)) {
+      return new Response("Not Found", {
+        status: 404,
+        statusText: "Not Found",
+      });
+    }
+
+    // 其他情况（SPA 路由等）返回 Pages 的响应
+    return nextRes;
   }
 
   return res;

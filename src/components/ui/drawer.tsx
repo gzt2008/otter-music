@@ -5,12 +5,15 @@ import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "@/lib/utils";
 import { useExitLayerStore } from "@/hooks/useExitLayer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function Drawer({
   open,
   onOpenChange,
+  direction,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
+  const isMobile = useIsMobile();
   const push = useExitLayerStore((s) => s.push);
   const pop = useExitLayerStore((s) => s.pop);
   const onOpenChangeRef = React.useRef(onOpenChange);
@@ -28,11 +31,16 @@ function Drawer({
     };
   }, [open, push, pop]);
 
+  // On desktop, default to right-side panel instead of bottom drawer.
+  // Callers can still override by passing direction explicitly.
+  const resolvedDirection = direction ?? (isMobile ? "bottom" : "right");
+
   return (
     <DrawerPrimitive.Root
       data-slot="drawer"
       open={open}
       onOpenChange={onOpenChange}
+      direction={resolvedDirection}
       {...props}
     />
   );

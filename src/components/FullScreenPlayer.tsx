@@ -21,9 +21,11 @@ import {
   Pause,
   SquareArrowOutUpRight,
   ClockFading,
+  X,
 } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useMounted } from "@/hooks/use-mounted";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { usePlayerActions } from "@/hooks/usePlayerActions";
 import { usePlayerUIState } from "@/hooks/usePlayerUIState";
 import { PlayerQueueDrawer } from "./PlayerQueueDrawer";
@@ -43,6 +45,8 @@ import { useShallow } from "zustand/react/shallow";
 import toast from "react-hot-toast";
 import { useCoverColors } from "@/hooks/useCoverColors";
 import { pickBestColor, createBackgroundColor } from "@/lib/utils/color";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface ModeIconProps {
   isRepeat: boolean;
@@ -261,236 +265,181 @@ export function FullScreenPlayer({
     setCurrentIndexAndPlay((currentIndex + 1) % queue.length);
   };
 
-  return createPortal(
-    <div
-      className={cn(
-        "fixed inset-0 z-50 transition-transform duration-500 ease-in-out flex flex-col",
-        isFullScreen ? "translate-y-0" : "translate-y-full"
-      )}
-    >
-      {/* 背景渲染层 */}
-      <BackgroundLayer
-        hslColor={hslColor}
-        coverUrl={coverUrl}
-        mode={fullScreenBackgroundMode}
-      />
+  const isMobile = useIsMobile();
 
-      <header className="shrink-0 flex items-center justify-between px-6 pt-[calc(1rem+var(--safe-area-top))] pb-6 relative z-10">
+  const trackInfo = (
+    <div className="flex items-center justify-between">
+      <div
+        className={cn("min-w-0 flex-1 cursor-pointer select-none")}
+        onMouseDown={trackInfoPressHandlers.onMouseDown}
+        onMouseUp={trackInfoPressHandlers.onMouseUp}
+        onMouseLeave={trackInfoPressHandlers.onMouseLeave}
+        onTouchStart={trackInfoPressHandlers.onTouchStart}
+        onTouchEnd={trackInfoPressHandlers.onTouchEnd}
+        title="长按复制歌曲信息"
+      >
+        <h2
+          className={cn(
+            "truncate font-semibold text-white",
+            isMobile ? "text-xl" : "text-lg"
+          )}
+        >
+          {currentTrack?.name || "未知歌曲"}
+        </h2>
+        <p
+          className={cn(
+            "truncate text-white/60 mt-1",
+            isMobile ? "text-sm" : "text-xs"
+          )}
+        >
+          {currentTrack?.artist?.join(", ") || "未知歌手"}
+        </p>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
         <Button
           variant="ghost"
           size="icon"
-          className="h-12 w-12 text-white/60 hover:bg-white/10 hover:text-white"
-          onClick={() => {
-            onClose();
+          className="h-10 w-10 text-white/70 hover:bg-white/10 hover:text-white"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggleLike();
           }}
         >
-          <ChevronDown className="h-6 w-6" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-xs tracking-widest text-white/50 hover:text-white hover:bg-white/10 h-8 px-3"
-          onClick={() => setQualityDrawerOpen(true)}
-        >
-          {!showLyrics && getQualityShortLabel(quality)}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-12 w-12 text-white/60 hover:bg-white/10 hover:text-white"
-          onClick={handleShare}
-        >
-          <SquareArrowOutUpRight className="h-5 w-5" />
-        </Button>
-      </header>
-
-      <div
-        className="flex-1 flex flex-col items-center justify-center px-2 relative z-10 overflow-hidden cursor-pointer"
-        onClick={() => {
-          setShowLyrics(!showLyrics);
-        }}
-      >
-        {showLyrics ? (
-          <div className="w-full h-full">
-            <LyricsPanel track={currentTrack} active={isFullScreen} />
-          </div>
-        ) : (
-          <div
+          <Heart
             className={cn(
-              "relative aspect-square w-72 max-w-[320px] overflow-hidden rounded-3xl transition-transform duration-500 ring-1 ring-white/5",
-              isPlaying ? "scale-100" : "scale-[0.95]"
+              "h-6 w-6 transition-all",
+              isCurrentTrackFavorite && "fill-primary text-primary"
             )}
-            style={{
-              boxShadow:
-                fullScreenBackgroundMode === "theme" && hslColor
-                  ? `0 30px 60px -12px hsla(${hslColor[0]}, ${
-                      hslColor[1]
-                    }%, ${Math.max(0, hslColor[2] - 20)}%, 0.4)`
-                  : "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-            }}
-          >
-            <MusicCover
-              src={coverUrl}
-              alt={currentTrack?.name}
-              className="h-full w-full object-cover dark select-none touch-none"
-              iconClassName="h-16 w-16 text-white/30"
+          />
+        </Button>
+        {currentTrack && (
+          <>
+            <MusicTrackMobileMenu
+              track={currentTrack}
+              open={moreDrawerOpen}
+              onOpenChange={setMoreDrawerOpen}
+              onAddToPlaylist={() => setIsAddToPlaylistOpen(true)}
+              onDownload={() =>
+                downloadMusicTrack(currentTrack, parseInt(quality))
+              }
+              isFavorite={isCurrentTrackFavorite}
+              onToggleLike={() => handleToggleLike()}
+              triggerClassName="h-10 w-10 text-white/70 hover:bg-white/10 hover:text-white"
+              onNavigate={() => onClose()}
             />
-          </div>
+            <AddToPlaylistDrawer
+              open={isAddToPlaylistOpen}
+              onOpenChange={setIsAddToPlaylistOpen}
+              track={currentTrack}
+            />
+          </>
         )}
       </div>
+    </div>
+  );
 
-      <div className="shrink-0 px-8 py-4 relative z-10">
-        <div className="flex items-center justify-between">
-          <div
-            className={cn("min-w-0 flex-1 cursor-pointer select-none")}
-            onMouseDown={trackInfoPressHandlers.onMouseDown}
-            onMouseUp={trackInfoPressHandlers.onMouseUp}
-            onMouseLeave={trackInfoPressHandlers.onMouseLeave}
-            onTouchStart={trackInfoPressHandlers.onTouchStart}
-            onTouchEnd={trackInfoPressHandlers.onTouchEnd}
-            title="长按复制歌曲信息"
-          >
-            <h2 className="truncate text-xl font-semibold text-white">
-              {currentTrack?.name || "未知歌曲"}
-            </h2>
-            <p className="truncate text-sm text-white/60 mt-1">
-              {currentTrack?.artist?.join(", ") || "未知歌手"}
-            </p>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 text-white/70 hover:bg-white/10 hover:text-white"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggleLike();
-              }}
-            >
-              <Heart
-                className={cn(
-                  "h-6 w-6 transition-all",
-                  isCurrentTrackFavorite && "fill-primary text-primary"
-                )}
-              />
-            </Button>
-            {currentTrack && (
-              <>
-                <MusicTrackMobileMenu
-                  track={currentTrack}
-                  open={moreDrawerOpen}
-                  onOpenChange={setMoreDrawerOpen}
-                  onAddToPlaylist={() => {
-                    setIsAddToPlaylistOpen(true);
-                  }}
-                  onDownload={() => {
-                    downloadMusicTrack(currentTrack, parseInt(quality));
-                  }}
-                  isFavorite={isCurrentTrackFavorite}
-                  onToggleLike={() => {
-                    handleToggleLike();
-                  }}
-                  triggerClassName="h-10 w-10 text-white/70 hover:bg-white/10 hover:text-white"
-                  onNavigate={() => {
-                    onClose();
-                  }}
-                />
-                <AddToPlaylistDrawer
-                  open={isAddToPlaylistOpen}
-                  onOpenChange={setIsAddToPlaylistOpen}
-                  track={currentTrack}
-                />
-              </>
-            )}
-          </div>
+  const progressBar = (
+    <PlayerProgressBar
+      className="relative"
+      leftTimeSuffix={
+        playbackSpeed !== 1.0 ? (
+          <span className="ml-1 text-[0.7em] align-sub opacity-70">
+            x{playbackSpeed.toFixed(1)}
+          </span>
+        ) : null
+      }
+      centerContent={
+        sleepTimerIsActive ? (
+          <span className="flex items-center gap-1 text-[0.85em]">
+            <ClockFading className="w-2.5 h-2.5" />
+            {formatTime(sleepTimerRemaining)}
+          </span>
+        ) : null
+      }
+      onLeftTimeClick={() => setSpeedDrawerOpen(true)}
+      onRightTimeClick={() => setSleepDrawerOpen(true)}
+      onCenterClick={() => setSleepDrawerOpen(true)}
+    />
+  );
+
+  const controlButtons = (
+    <div
+      className={cn(
+        "flex items-center justify-between",
+        isMobile
+          ? "px-8 py-6 pb-[calc(2rem+env(safe-area-inset-bottom))]"
+          : "px-6 py-4"
+      )}
+    >
+      <Button variant="ghost" size="icon" className="h-12 w-12 transition-colors text-white/70 hover:text-white hover:bg-white/10" onClick={handleModeToggle}>
+        <ModeIcon isRepeat={isRepeat} isShuffle={isShuffle} />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-12 w-12 text-white/70 hover:bg-white/10 hover:text-white" onClick={handlePrev}>
+        <SkipBack className="h-6 w-6 fill-current" />
+      </Button>
+      <Button size="icon" className="h-16 w-16 rounded-full bg-white text-black shadow-lg hover:scale-105 transition-all active:scale-95" onClick={togglePlay} disabled={isLoading}>
+        {isLoading ? <Spinner className="h-7 w-7 text-black" /> : isPlaying ? <Pause className="h-7 w-7 fill-current" /> : <Play className="h-7 w-7 fill-current ml-1" />}
+      </Button>
+      <Button variant="ghost" size="icon" className="h-12 w-12 text-white/70 hover:bg-white/10 hover:text-white" onClick={handleNext}>
+        <SkipForward className="h-6 w-6 fill-current" />
+      </Button>
+      <PlayerQueueDrawer
+        queue={queue}
+        currentIndex={currentIndex}
+        isPlaying={isPlaying}
+        isShuffle={isShuffle}
+        onPlay={playTrack}
+        onClear={handleClearQueue}
+        onReshuffle={reshuffle}
+        onRemove={handleRemoveFromQueue}
+        onPlayTrack={playTrackAsNext}
+        trigger={
+          <Button variant="ghost" size="icon" className="h-12 w-12 text-white/70 hover:bg-white/10 hover:text-white">
+            <ListVideo className="h-5 w-5" />
+          </Button>
+        }
+      />
+    </div>
+  );
+
+  // Desktop: cover section shows static cover (no lyrics toggle — lyrics are in the right panel)
+  const coverSection = (
+    <div
+      className="flex-1 flex flex-col items-center justify-center px-2 relative z-10 overflow-hidden"
+      onClick={isMobile ? () => setShowLyrics(!showLyrics) : undefined}
+      style={isMobile ? { cursor: "pointer" } : undefined}
+    >
+      {showLyrics ? (
+        <div className="w-full h-full">
+          <LyricsPanel track={currentTrack} active={isFullScreen} />
         </div>
-      </div>
-
-      <div className="shrink-0 px-8 relative z-10">
-        <PlayerProgressBar
-          className="relative"
-          leftTimeSuffix={
-            playbackSpeed !== 1.0 ? (
-              <span className="ml-1 text-[0.7em] align-sub opacity-70">
-                x{playbackSpeed.toFixed(1)}
-              </span>
-            ) : null
-          }
-          centerContent={
-            sleepTimerIsActive ? (
-              <span className="flex items-center gap-1 text-[0.85em]">
-                <ClockFading className="w-2.5 h-2.5" />
-                {formatTime(sleepTimerRemaining)}
-              </span>
-            ) : null
-          }
-          onLeftTimeClick={() => setSpeedDrawerOpen(true)}
-          onRightTimeClick={() => setSleepDrawerOpen(true)}
-          onCenterClick={() => setSleepDrawerOpen(true)}
-        />
-      </div>
-
-      <div className="shrink-0 flex items-center justify-between px-8 py-6 pb-[calc(2rem+var(--safe-area-bottom))] relative z-10">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-12 w-12 transition-colors text-white/70 hover:text-white hover:bg-white/10"
-          onClick={handleModeToggle}
-        >
-          <ModeIcon isRepeat={isRepeat} isShuffle={isShuffle} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-12 w-12 text-white/70 hover:bg-white/10 hover:text-white"
-          onClick={handlePrev}
-        >
-          <SkipBack className="h-6 w-6 fill-current" />
-        </Button>
-        <Button
-          size="icon"
-          className="h-16 w-16 rounded-full bg-white text-black shadow-lg hover:scale-105 transition-all active:scale-95"
-          onClick={togglePlay}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <Spinner className="h-7 w-7 text-black" />
-          ) : isPlaying ? (
-            <Pause className="h-7 w-7 fill-current" />
-          ) : (
-            <Play className="h-7 w-7 fill-current ml-1" />
+      ) : (
+        <div
+          className={cn(
+            "relative aspect-square overflow-hidden rounded-3xl transition-transform duration-500 ring-1 ring-white/5",
+            isMobile ? "w-72 max-w-[320px]" : "w-64 max-w-[280px]",
+            isPlaying ? "scale-100" : "scale-[0.95]"
           )}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-12 w-12 text-white/70 hover:bg-white/10 hover:text-white"
-          onClick={handleNext}
+          style={{
+            boxShadow:
+              fullScreenBackgroundMode === "theme" && hslColor
+                ? `0 30px 60px -12px hsla(${hslColor[0]}, ${hslColor[1]}%, ${Math.max(0, hslColor[2] - 20)}%, 0.4)`
+                : "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+          }}
         >
-          <SkipForward className="h-6 w-6 fill-current" />
-        </Button>
-        <PlayerQueueDrawer
-          queue={queue}
-          currentIndex={currentIndex}
-          isPlaying={isPlaying}
-          isShuffle={isShuffle}
-          onPlay={playTrack}
-          onClear={handleClearQueue}
-          onReshuffle={reshuffle}
-          onRemove={handleRemoveFromQueue}
-          onPlayTrack={playTrackAsNext}
-          trigger={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-12 w-12 text-white/70 hover:bg-white/10 hover:text-white"
-            >
-              <ListVideo className="h-5 w-5" />
-            </Button>
-          }
-        />
-      </div>
+          <MusicCover
+            src={coverUrl}
+            alt={currentTrack?.name}
+            className="h-full w-full object-cover dark select-none touch-none"
+            iconClassName="h-16 w-16 text-white/30"
+          />
+        </div>
+      )}
+    </div>
+  );
 
+  const drawers = (
+    <>
       <QualityDrawer
         open={qualityDrawerOpen}
         onOpenChange={setQualityDrawerOpen}
@@ -503,7 +452,107 @@ export function FullScreenPlayer({
         open={sleepDrawerOpen}
         onOpenChange={setSleepDrawerOpen}
       />
-    </div>,
-    document.body
+    </>
+  );
+
+  // Mobile: full-screen slide-up portal
+  if (isMobile) {
+    return createPortal(
+      <div
+        className={cn(
+          "fixed inset-0 z-50 transition-transform duration-500 ease-in-out flex flex-col",
+          isFullScreen ? "translate-y-0" : "translate-y-full"
+        )}
+      >
+        <BackgroundLayer
+          hslColor={hslColor}
+          coverUrl={coverUrl}
+          mode={fullScreenBackgroundMode}
+        />
+        <header className="shrink-0 flex items-center justify-between px-6 pt-[calc(1rem+var(--safe-area-top))] pb-6 relative z-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-12 w-12 text-white/60 hover:bg-white/10 hover:text-white"
+            onClick={onClose}
+          >
+            <ChevronDown className="h-6 w-6" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs tracking-widest text-white/50 hover:text-white hover:bg-white/10 h-8 px-3"
+            onClick={() => setQualityDrawerOpen(true)}
+          >
+            {!showLyrics && getQualityShortLabel(quality)}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-12 w-12 text-white/60 hover:bg-white/10 hover:text-white"
+            onClick={handleShare}
+          >
+            <SquareArrowOutUpRight className="h-5 w-5" />
+          </Button>
+        </header>
+        {coverSection}
+        <div className="shrink-0 px-8 py-4 relative z-10">{trackInfo}</div>
+        <div className="shrink-0 px-8 relative z-10">{progressBar}</div>
+        {controlButtons}
+        {drawers}
+      </div>,
+      document.body
+    );
+  }
+
+  // Desktop: centered dialog with side-by-side layout
+  return (
+    <Dialog open={isFullScreen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        showCloseButton={false}
+        aria-describedby={undefined}
+        className="sm:max-w-[900px] h-[600px] p-0 bg-zinc-950 border-white/10 overflow-hidden block gap-0"
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
+        <DialogTitle>
+          <VisuallyHidden>{currentTrack?.name || "正在播放"}</VisuallyHidden>
+        </DialogTitle>
+        <BackgroundLayer
+          hslColor={hslColor}
+          coverUrl={coverUrl}
+          mode={fullScreenBackgroundMode}
+        />
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-20 h-8 w-8 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+        >
+          <X className="h-4 w-4" />
+        </button>
+        <div className="absolute top-4 left-4 z-20">
+          <button
+            onClick={() => setQualityDrawerOpen(true)}
+            className="text-xs tracking-widest text-white/50 hover:text-white px-3 py-1.5 rounded-md hover:bg-white/10 transition-colors"
+          >
+            {getQualityShortLabel(quality)}
+          </button>
+        </div>
+        <div className="flex h-full relative z-10">
+          <div className="flex flex-col w-[400px] shrink-0 pr-6 py-6">
+            <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
+              {coverSection}
+            </div>
+            <div className="shrink-0 px-6 mt-4">{trackInfo}</div>
+            <div className="shrink-0 px-6">{progressBar}</div>
+            <div className="shrink-0">{controlButtons}</div>
+          </div>
+          <div className="flex-1 min-w-0 border-l border-white/5">
+            <div className="h-full">
+              <LyricsPanel track={currentTrack} active={isFullScreen} />
+            </div>
+          </div>
+        </div>
+        {drawers}
+      </DialogContent>
+    </Dialog>
   );
 }

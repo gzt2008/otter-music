@@ -24,7 +24,9 @@ function getDeviceMid(): string {
   } catch {
     /* localStorage not available */
   }
-  const mid = crypto.randomUUID().replace(/-/g, "");
+  const mid = (
+    crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)
+  ).replace(/-/g, "");
   try {
     localStorage.setItem(DEVICE_MID_STORAGE_KEY, mid);
   } catch {

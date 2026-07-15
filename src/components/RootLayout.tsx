@@ -2,10 +2,12 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { MusicLayout } from "@/components/MusicLayout";
 import { MusicNowPlayingBar } from "@/components/MusicNowPlayingBar";
 import { MusicTabBar } from "@/components/MusicTabBar";
+import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { GlobalMusicPlayer } from "@/components/GlobalMusicPlayer";
 import { useMusicStore } from "@/store/music-store";
 import { useShallow } from "zustand/react/shallow";
 import { useExitLayer } from "@/hooks/useExitLayer";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { App as CapacitorApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { useEffect, useCallback, useRef, lazy, Suspense } from "react";
@@ -104,22 +106,28 @@ export function RootLayout() {
   );
 
   const isTab = isRootTabPath(location.pathname);
+  const isMobile = useIsMobile();
 
   return (
     <>
-      <MusicLayout
-        hidePlayer={isFullScreenPlayer || !hasCurrentTrack}
-        isTab={isTab}
-        player={
-          <MusicNowPlayingBar
-            onOpenFullScreen={() => setStoreFullScreen(true)}
-            isTab={isTab}
-          />
-        }
-        tabBar={<MusicTabBar />}
-      >
-        <Outlet />
-      </MusicLayout>
+      <div className="flex h-dvh overflow-hidden bg-background">
+        {/* Desktop Sidebar */}
+        {!isMobile && <DesktopSidebar />}
+
+        <MusicLayout
+          hidePlayer={isFullScreenPlayer || !hasCurrentTrack}
+          isTab={isTab && isMobile}
+          player={
+            <MusicNowPlayingBar
+              onOpenFullScreen={() => setStoreFullScreen(true)}
+              isTab={isTab && isMobile}
+            />
+          }
+          tabBar={isMobile ? <MusicTabBar /> : undefined}
+        >
+          <Outlet />
+        </MusicLayout>
+      </div>
 
       <GlobalMusicPlayer />
 

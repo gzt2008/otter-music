@@ -90,9 +90,11 @@ export function FavoritesView({
     <div className="flex flex-col h-full">
       {/* Header */}
       <div
-        className={cn("p-4 border-b flex items-end gap-4 bg-muted/10 relative")}
+        className={cn(
+          "p-4 md:p-6 border-b flex items-end gap-4 md:gap-6 bg-muted/10 relative"
+        )}
       >
-        <div className="h-20 w-20 bg-primary/10 rounded-lg flex items-center justify-center shadow-sm border overflow-hidden shrink-0 flex-[0_0_80px] min-w-20 min-h-20">
+        <div className="h-20 w-20 md:h-28 md:w-28 bg-primary/10 rounded-lg flex items-center justify-center shadow-sm border overflow-hidden shrink-0 flex-[0_0_80px] md:flex-[0_0_112px] min-w-20 min-h-20 md:min-w-28 md:min-h-28">
           <div className="h-8 w-8 shrink-0 flex-[0_0_32px] min-w-8 min-h-8">
             <Heart
               size={32}

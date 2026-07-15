@@ -46,3 +46,5 @@ tsconfig.tsbuildinfo
 .trae/
 .claude/
 openspec/
+
+dev-dist/

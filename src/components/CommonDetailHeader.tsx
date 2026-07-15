@@ -94,12 +94,12 @@ export const CommonDetailHeader = memo(function CommonDetailHeader({
         hasDesc ? "flex-col pb-0" : "flex-row"
       )}
     >
-      <div className="flex gap-4 items-start w-full">
+      <div className="flex gap-4 md:gap-6 items-start w-full">
         <MusicCover
           src={coverUrl}
           alt={title}
           previewable
-          className="shrink-0 size-24 rounded-xl shadow-md ring-1 ring-white/10 object-cover"
+          className="shrink-0 size-24 md:size-36 rounded-xl shadow-md ring-1 ring-white/10 object-cover"
           fallbackIcon={fallbackIcon}
         />
         <div className="flex-1 min-w-0 flex flex-col gap-1 py-0.5">

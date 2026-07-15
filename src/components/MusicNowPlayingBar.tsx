@@ -85,6 +85,15 @@ export function MusicNowPlayingBar({
 
   return (
     <div className={cn(isTab ? "px-3" : "w-full")}>
+      {/* Desktop progress bar */}
+      {!isTab && duration > 0 && (
+        <div className="h-0.5 w-full bg-muted/30">
+          <div
+            className="h-full bg-primary transition-[width] duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
       <div
         className={cn(
           "flex items-center backdrop-blur-sm transition-all duration-300",

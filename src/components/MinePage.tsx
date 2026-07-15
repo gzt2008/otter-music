@@ -98,7 +98,7 @@ export function MinePage({ onSelectPlaylist }: MinePageProps) {
 
   return (
     <div className="p-5 pb-24">
-      <div className="flex gap-2 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
         <button
           onClick={() => navigate("/history")}
           className="flex-1 flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-card/70 hover:bg-card transition-all duration-300"
@@ -228,7 +228,7 @@ export function MinePage({ onSelectPlaylist }: MinePageProps) {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
           {activePlaylists.map((playlist) => (
             <div
               key={playlist.id}

@@ -26,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import { useMusicStore } from "@/store/music-store";
 import { MusicProviderFactory } from "@/lib/music-provider";
 import { MusicCommentsDrawer } from "./MusicCommentsDrawer";
+import { useConfirm } from "@/hooks/useConfirm";
 import {
   Dialog,
   DialogContent,
@@ -43,6 +44,8 @@ interface MusicTrackMobileMenuProps {
   playlistId?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** true = 桌面端渲染为居中小窗口 */
+  compact?: boolean;
   onAddToNextPlay?: () => void;
   onAddToPlaylist: () => void;
   onDownload?: () => void;
@@ -81,6 +84,7 @@ export function MusicTrackMobileMenu({
   track,
   open,
   onOpenChange,
+  compact,
   onAddToNextPlay,
   onAddToPlaylist,
   onDownload,
@@ -95,6 +99,7 @@ export function MusicTrackMobileMenu({
 }: MusicTrackMobileMenuProps) {
   const coverUrl = useMusicCover(track, open);
   const navigate = useNavigate();
+  const { confirm } = useConfirm();
   const [showArtistSelection, setShowArtistSelection] = useState(false);
   const [showComments, setShowComments] = useState(false);
 
@@ -204,7 +209,7 @@ export function MusicTrackMobileMenu({
 
   return (
     <div>
-      <Drawer open={open} onOpenChange={onOpenChange}>
+      <Drawer open={open} onOpenChange={onOpenChange} compact={compact}>
         <DrawerTrigger asChild>
           <Button
             size="icon"
@@ -345,11 +350,14 @@ export function MusicTrackMobileMenu({
               <ActionButton
                 icon={Trash2}
                 className="text-destructive hover:text-destructive"
-                onClick={() => {
+                onClick={async () => {
                   onOpenChange(false);
                   if (
                     !confirmRemove ||
-                    window.confirm(`确定${removeLabel}《${track.name}》吗？`)
+                    (await confirm({
+                      title: `确定${removeLabel}《${track.name}》吗？`,
+                      variant: "destructive",
+                    }))
                   ) {
                     onRemove();
                   }

@@ -44,6 +44,7 @@ import { useMarketSession } from "@/store/session/market-session";
 import { logger } from "@/lib/logger";
 import { useDetailPage } from "@/hooks/useDetailPage";
 import { useExitLayer } from "@/hooks/useExitLayer";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface NeteaseDetailProps {
   id: string | null;
@@ -96,6 +97,7 @@ export function NeteaseDetail({
     (location.state as ArtistAlbumSheetNavigationState | null | undefined) ??
     null;
   const { push: pushExitLayer, pop: popExitLayer } = useExitLayer();
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const {
     isOpen: isAlbumSheetOpen,
@@ -209,7 +211,11 @@ export function NeteaseDetail({
     if (!id || !cookie || type !== "album" || !detail) return;
     const shouldSub = !detail.sub;
 
-    if (!shouldSub && !confirm("确定不再收藏吗？")) return;
+    if (
+      !shouldSub &&
+      !(await confirm({ title: "确定不再收藏吗？", variant: "destructive" }))
+    )
+      return;
 
     try {
       let success = false;
@@ -384,6 +390,7 @@ export function NeteaseDetail({
         artistName={detail?.name}
         albumCount={detail?.albumCount}
       />
+      <ConfirmDialog />
     </GenericDetailPage>
   );
 }

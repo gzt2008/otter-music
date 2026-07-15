@@ -281,6 +281,7 @@ export function PlaylistMarket() {
           <PlaylistCategorySelector
             activeCategory={activeCategory}
             onSelect={setActiveCategory}
+            compact
             trigger={
               <Button
                 variant="ghost"

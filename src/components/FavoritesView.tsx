@@ -3,7 +3,7 @@ import { Play, Search, Heart } from "lucide-react";
 import { filterTracks } from "@/lib/utils/filter-tracks";
 import { MusicTrackList } from "./MusicTrackList";
 import { Input } from "@/components/ui/input";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { PlaylistOperations } from "./PlaylistOperations";
 import { MusicTrack } from "@/types/music";
@@ -38,6 +38,7 @@ export function FavoritesView({
     Set<string> | undefined
   >();
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const filteredTracks = useMemo(
     () => filterTracks(tracks, searchQuery),
     [tracks, searchQuery]
@@ -139,9 +140,13 @@ export function FavoritesView({
       </div>
 
       {/* List */}
-      <div className="flex-1 min-h-0 bg-background/50">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 min-h-0 bg-background/50 overflow-y-auto custom-scrollbar"
+      >
         <MusicTrackList
           tracks={filteredTracks}
+          scrollContainerRef={scrollContainerRef}
           onPlay={(track) =>
             onPlay(
               track,

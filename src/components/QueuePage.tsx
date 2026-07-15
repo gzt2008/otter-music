@@ -5,6 +5,7 @@ import { MusicPlaylistView } from "./MusicPlaylistView";
 import { MusicTrack } from "@/types/music";
 import { Button } from "./ui/button";
 import { PageLayout } from "./PageLayout";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface QueuePageProps {
   queue: MusicTrack[];
@@ -25,31 +26,40 @@ export function QueuePage({
   onClear,
   onBack,
 }: QueuePageProps) {
+  const { confirm, ConfirmDialog } = useConfirm();
+
+  const handleClearQueue = async () => {
+    if (
+      await confirm({ title: "确定清空播放列表吗？", variant: "destructive" })
+    ) {
+      onClear();
+    }
+  };
+
   return (
-    <PageLayout
-      title="播放列表"
-      onBack={onBack}
-      action={
-        queue.length > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => confirm("确定清空播放列表吗？") && onClear()}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        )
-      }
-    >
-      <MusicPlaylistView
+    <>
+      <PageLayout
         title="播放列表"
-        tracks={queue}
-        icon={<ListVideo className="h-8 w-8 text-primary/80" />}
-        onPlay={onPlay}
-        onRemove={onRemove}
-        currentTrackId={currentTrackId}
-        isPlaying={isPlaying}
-      />
-    </PageLayout>
+        onBack={onBack}
+        action={
+          queue.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={handleClearQueue}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )
+        }
+      >
+        <MusicPlaylistView
+          title="播放列表"
+          tracks={queue}
+          icon={<ListVideo className="h-8 w-8 text-primary/80" />}
+          onPlay={onPlay}
+          onRemove={onRemove}
+          currentTrackId={currentTrackId}
+          isPlaying={isPlaying}
+        />
+      </PageLayout>
+      <ConfirmDialog />
+    </>
   );
 }

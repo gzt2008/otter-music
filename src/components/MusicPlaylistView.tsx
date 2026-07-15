@@ -30,6 +30,7 @@ import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { AddByUrlDrawer } from "./AddByUrlDrawer";
 import { logger } from "@/lib/logger";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface MusicPlaylistViewProps {
   title: string;
@@ -83,6 +84,7 @@ export function MusicPlaylistView({
     Set<string> | undefined
   >();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const playlists = useMusicStore(useShallow((state) => state.playlists));
   const playlist = playlists.find((p) => p.id === playlistId);
@@ -263,9 +265,14 @@ export function MusicPlaylistView({
                 onExport={() => exportPlaylist(title, tracks)}
                 onDelete={
                   onDelete
-                    ? () => {
-                        if (confirm(`确定删除歌单「${title}」吗？`)) {
-                          onDelete(playlistId);
+                    ? async () => {
+                        if (
+                          await confirm({
+                            title: `确定删除歌单「${title}」吗？`,
+                            variant: "destructive",
+                          })
+                        ) {
+                          onDelete(playlistId!);
                         }
                       }
                     : undefined
@@ -355,6 +362,7 @@ export function MusicPlaylistView({
         onClose={() => setIsAddByUrlOpen(false)}
         onConfirm={handleAddByUrl}
       />
+      <ConfirmDialog />
     </div>
   );
 }

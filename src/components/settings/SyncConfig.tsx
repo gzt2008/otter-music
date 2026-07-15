@@ -14,9 +14,11 @@ import {
 import { Input } from "../ui/input";
 import { useSyncStore } from "@/store/sync-store";
 import { SettingItem } from "./SettingItem";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export function SyncConfig() {
   const { syncKey, lastSyncTime, setSyncKey, clearSyncConfig } = useSyncStore();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inputKey, setInputKey] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -37,8 +39,8 @@ export function SyncConfig() {
     return `${key.slice(0, 4)}****${key.slice(-4)}`;
   };
 
-  const handleConfirm = () => {
-    if (!confirm("确认覆盖当前配置？")) return;
+  const handleConfirm = async () => {
+    if (!(await confirm({ title: "确认覆盖当前配置？" }))) return;
     if (inputKey.trim()) {
       setSyncKey(inputKey.trim());
       setInputKey("");
@@ -46,8 +48,14 @@ export function SyncConfig() {
     }
   };
 
-  const handleClear = () => {
-    if (!confirm("确认清除当前配置吗？")) return;
+  const handleClear = async () => {
+    if (
+      !(await confirm({
+        title: "确认清除当前配置吗？",
+        variant: "destructive",
+      }))
+    )
+      return;
     clearSyncConfig();
     setDialogOpen(false);
   };
@@ -118,6 +126,7 @@ export function SyncConfig() {
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
+      <ConfirmDialog />
     </>
   );
 }

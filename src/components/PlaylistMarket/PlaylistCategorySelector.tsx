@@ -16,9 +16,15 @@ interface PlaylistCategorySelectorProps {
   activeCategory: string;
   onSelect: (id: string) => void;
   trigger?: React.ReactNode;
+  compact?: boolean;
 }
 
-export function PlaylistCategorySelector({ activeCategory, onSelect, trigger }: PlaylistCategorySelectorProps) {
+export function PlaylistCategorySelector({
+  activeCategory,
+  onSelect,
+  trigger,
+  compact,
+}: PlaylistCategorySelectorProps) {
   const [open, setOpen] = useState(false);
 
   const handleSelect = (id: string) => {
@@ -27,18 +33,24 @@ export function PlaylistCategorySelector({ activeCategory, onSelect, trigger }: 
   };
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
+    <Drawer open={open} onOpenChange={setOpen} compact={compact}>
       <DrawerTrigger asChild>
         {trigger || (
-          <Button variant="ghost" size="icon" className="rounded-full hover:bg-secondary">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full hover:bg-secondary"
+          >
             <LayoutGrid className="h-4 w-4 text-muted-foreground" />
           </Button>
         )}
       </DrawerTrigger>
-      
+
       <DrawerContent className="max-h-[80vh]">
         <DrawerHeader className="px-6 py-4">
-          <DrawerTitle className="text-lg font-semibold tracking-tight">歌单分类</DrawerTitle>
+          <DrawerTitle className="text-lg font-semibold tracking-tight">
+            歌单分类
+          </DrawerTitle>
         </DrawerHeader>
 
         <ScrollArea className="px-6 pb-12 overflow-y-auto">

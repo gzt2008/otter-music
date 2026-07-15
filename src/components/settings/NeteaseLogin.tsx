@@ -26,6 +26,7 @@ import toast from "react-hot-toast";
 import { QRCodeSVG } from "qrcode.react";
 import { useNeteaseStore } from "@/store/netease-store";
 import { writeClipboardText } from "@/lib/clipboard";
+import { useConfirm } from "@/hooks/useConfirm";
 
 const STATUS_MESSAGES = {
   loading: "正在获取二维码...",
@@ -40,6 +41,7 @@ type LoginMode = "qr" | "cookie";
 
 export function NeteaseLogin() {
   const { user, cookie, setLogin, logout } = useNeteaseStore();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showUserDrawer, setShowUserDrawer] = useState(false); // 新增：控制用户操作面板
   const [loading, setLoading] = useState(false);
@@ -186,8 +188,14 @@ export function NeteaseLogin() {
     }
   };
 
-  const handleLogout = () => {
-    if (!window.confirm("确定要退出网易云登录吗？")) return;
+  const handleLogout = async () => {
+    if (
+      !(await confirm({
+        title: "确定要退出网易云登录吗？",
+        variant: "destructive",
+      }))
+    )
+      return;
     logout();
     setShowUserDrawer(false);
     toast.success("已退出登录");
@@ -415,6 +423,7 @@ export function NeteaseLogin() {
           </div>
         </DrawerContent>
       </Drawer>
+      <ConfirmDialog />
     </>
   );
 }

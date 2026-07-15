@@ -39,6 +39,7 @@ import {
   adminDeleteKey,
   type SyncKeyItem,
 } from "@/lib/api/admin";
+import { useConfirm } from "@/hooks/useConfirm";
 
 // ================================================================
 // 登录表单
@@ -189,6 +190,7 @@ function KeyManager({ onLogout }: KeyManagerProps) {
   const [creating, setCreating] = useState(false);
   const [newKey, setNewKey] = useState("");
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const loadKeys = useCallback(async () => {
     setLoading(true);
@@ -224,9 +226,11 @@ function KeyManager({ onLogout }: KeyManagerProps) {
 
   const handleDelete = async (key: string) => {
     if (
-      !confirm(
-        `确认删除 Key：${key}？\n此操作不可恢复，该 Key 关联的同步数据将被永久删除。`
-      )
+      !(await confirm({
+        title: `确认删除 Key：${key}？`,
+        description: "此操作不可恢复，该 Key 关联的同步数据将被永久删除。",
+        variant: "destructive",
+      }))
     )
       return;
     setDeletingKey(key);
@@ -273,215 +277,222 @@ function KeyManager({ onLogout }: KeyManagerProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ background: "oklch(0.65 0.14 160)" }}
+    <>
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
+          <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div
+                className="w-7 h-7 rounded-lg flex items-center justify-center"
+                style={{ background: "oklch(0.65 0.14 160)" }}
+              >
+                <KeyRound className="h-3.5 w-3.5 text-white" />
+              </div>
+              <span className="font-semibold text-base">Sync Key 管理</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="gap-1.5 text-muted-foreground hover:text-foreground"
             >
-              <KeyRound className="h-3.5 w-3.5 text-white" />
-            </div>
-            <span className="font-semibold text-base">Sync Key 管理</span>
+              <LogOut className="h-4 w-4" />
+              <span className="text-sm">退出</span>
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-            className="gap-1.5 text-muted-foreground hover:text-foreground"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="text-sm">退出</span>
-          </Button>
-        </div>
-      </header>
+        </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6 space-y-5">
-        {/* 统计卡片 */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Card className="border-primary/20 bg-primary/5">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/15">
-                <Users
-                  className="h-4.5 w-4.5 text-primary"
-                  style={{ width: 18, height: 18 }}
+        <main className="max-w-4xl mx-auto px-4 py-6 space-y-5">
+          {/* 统计卡片 */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <Card className="border-primary/20 bg-primary/5">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-primary/15">
+                  <Users
+                    className="h-4.5 w-4.5 text-primary"
+                    style={{ width: 18, height: 18 }}
+                  />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold tabular-nums">
+                    {keys.length}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Key 总数</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-green-500/20 bg-green-500/5">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-500/15">
+                  <RefreshCw
+                    className="text-green-500"
+                    style={{ width: 18, height: 18 }}
+                  />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold tabular-nums">
+                    {keys.filter((k) => k.lastSyncTime > 0).length}
+                  </p>
+                  <p className="text-xs text-muted-foreground">已同步</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 新增 Key 后显示结果 */}
+          {newKey && (
+            <Card className="border-green-500/30 bg-green-500/5">
+              <CardContent className="p-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs text-green-600 font-medium mb-1">
+                    Key 创建成功，请及时保存
+                  </p>
+                  <code className="font-mono text-sm font-semibold text-green-700 dark:text-green-400 break-all">
+                    {newKey}
+                  </code>
+                </div>
+                <CopyButton text={newKey} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 操作栏 */}
+          <Card>
+            <CardHeader className="pb-3 pt-4 px-4">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                创建新 Key
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 pb-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="前缀（可选，如 user_）"
+                  value={prefix}
+                  onChange={(e) => setPrefix(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && !creating && handleCreate()
+                  }
+                  className="h-9 text-sm"
+                  maxLength={20}
                 />
-              </div>
-              <div>
-                <p className="text-2xl font-bold tabular-nums">{keys.length}</p>
-                <p className="text-xs text-muted-foreground">Key 总数</p>
+                <Button
+                  onClick={handleCreate}
+                  disabled={creating}
+                  size="sm"
+                  className="h-9 gap-1.5 shrink-0"
+                >
+                  {creating ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Plus className="h-3.5 w-3.5" />
+                  )}
+                  创建
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={loadKeys}
+                  disabled={loading}
+                  className="h-9 w-9 p-0 shrink-0"
+                  title="刷新"
+                >
+                  <RefreshCw
+                    className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
+                  />
+                </Button>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-green-500/20 bg-green-500/5">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-500/15">
-                <RefreshCw
-                  className="text-green-500"
-                  style={{ width: 18, height: 18 }}
-                />
-              </div>
-              <div>
-                <p className="text-2xl font-bold tabular-nums">
-                  {keys.filter((k) => k.lastSyncTime > 0).length}
-                </p>
-                <p className="text-xs text-muted-foreground">已同步</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* 新增 Key 后显示结果 */}
-        {newKey && (
-          <Card className="border-green-500/30 bg-green-500/5">
-            <CardContent className="p-4 flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs text-green-600 font-medium mb-1">
-                  Key 创建成功，请及时保存
-                </p>
-                <code className="font-mono text-sm font-semibold text-green-700 dark:text-green-400 break-all">
-                  {newKey}
-                </code>
-              </div>
-              <CopyButton text={newKey} />
-            </CardContent>
-          </Card>
-        )}
+          {/* 错误提示 */}
+          {error && (
+            <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-3 py-2">
+              {error}
+            </p>
+          )}
 
-        {/* 操作栏 */}
-        <Card>
-          <CardHeader className="pb-3 pt-4 px-4">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              创建新 Key
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <div className="flex gap-2">
-              <Input
-                placeholder="前缀（可选，如 user_）"
-                value={prefix}
-                onChange={(e) => setPrefix(e.target.value)}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && !creating && handleCreate()
-                }
-                className="h-9 text-sm"
-                maxLength={20}
-              />
-              <Button
-                onClick={handleCreate}
-                disabled={creating}
-                size="sm"
-                className="h-9 gap-1.5 shrink-0"
-              >
-                {creating ? (
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Plus className="h-3.5 w-3.5" />
+          {/* Key 列表 */}
+          <Card>
+            <CardHeader className="pb-2 pt-4 px-4 flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                全部 Key
+                {!loading && (
+                  <Badge variant="secondary" className="ml-2 text-xs">
+                    {keys.length}
+                  </Badge>
                 )}
-                创建
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={loadKeys}
-                disabled={loading}
-                className="h-9 w-9 p-0 shrink-0"
-                title="刷新"
-              >
-                <RefreshCw
-                  className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
-                />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 错误提示 */}
-        {error && (
-          <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-3 py-2">
-            {error}
-          </p>
-        )}
-
-        {/* Key 列表 */}
-        <Card>
-          <CardHeader className="pb-2 pt-4 px-4 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              全部 Key
-              {!loading && (
-                <Badge variant="secondary" className="ml-2 text-xs">
-                  {keys.length}
-                </Badge>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {loading ? (
-              <div className="flex items-center justify-center py-12 text-sm text-muted-foreground gap-2">
-                <RefreshCw className="h-4 w-4 animate-spin" /> 加载中…
-              </div>
-            ) : keys.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-sm text-muted-foreground gap-2">
-                <KeyRound className="h-8 w-8 opacity-30" />
-                <p>暂无 Sync Key</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="pl-4 w-1/2">Key</TableHead>
-                    <TableHead>最后同步</TableHead>
-                    <TableHead className="w-20">占用</TableHead>
-                    <TableHead className="w-16 pr-4 text-right">操作</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {keys.map((item) => (
-                    <TableRow key={item.key} className="group">
-                      <TableCell className="pl-4 font-mono text-xs">
-                        <span className="inline-flex items-center">
-                          <span
-                            className="truncate max-w-[160px] sm:max-w-xs"
-                            title={item.key}
-                          >
-                            {item.key}
-                          </span>
-                          <CopyButton text={item.key} />
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {formatTime(item.lastSyncTime)}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {formatSize(item.sizeBytes)}
-                      </TableCell>
-                      <TableCell className="pr-4 text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                          disabled={deletingKey === item.key}
-                          onClick={() => handleDelete(item.key)}
-                          title="删除"
-                        >
-                          {deletingKey === item.key ? (
-                            <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-3.5 w-3.5" />
-                          )}
-                        </Button>
-                      </TableCell>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {loading ? (
+                <div className="flex items-center justify-center py-12 text-sm text-muted-foreground gap-2">
+                  <RefreshCw className="h-4 w-4 animate-spin" /> 加载中…
+                </div>
+              ) : keys.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-sm text-muted-foreground gap-2">
+                  <KeyRound className="h-8 w-8 opacity-30" />
+                  <p>暂无 Sync Key</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="pl-4 w-1/2">Key</TableHead>
+                      <TableHead>最后同步</TableHead>
+                      <TableHead className="w-20">占用</TableHead>
+                      <TableHead className="w-16 pr-4 text-right">
+                        操作
+                      </TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+                  </TableHeader>
+                  <TableBody>
+                    {keys.map((item) => (
+                      <TableRow key={item.key} className="group">
+                        <TableCell className="pl-4 font-mono text-xs">
+                          <span className="inline-flex items-center">
+                            <span
+                              className="truncate max-w-[160px] sm:max-w-xs"
+                              title={item.key}
+                            >
+                              {item.key}
+                            </span>
+                            <CopyButton text={item.key} />
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {formatTime(item.lastSyncTime)}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {formatSize(item.sizeBytes)}
+                        </TableCell>
+                        <TableCell className="pr-4 text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                            disabled={deletingKey === item.key}
+                            onClick={() => handleDelete(item.key)}
+                            title="删除"
+                          >
+                            {deletingKey === item.key ? (
+                              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-3.5 w-3.5" />
+                            )}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+      <ConfirmDialog />
+    </>
   );
 }
 

@@ -118,7 +118,7 @@ export function PlayerProgressBar({
             {/* 拖拽/悬停时显示的玻璃质感圆点指示器 */}
             <div
               className={cn(
-                "w-4 h-4 bg-white rounded-full translate-x-2 transition-all duration-200",
+                "w-4 h-4 bg-white rounded-full transition-all duration-200 shrink-0",
                 isDragging
                   ? "opacity-100 scale-110 shadow-[0_0_12px_rgba(255,255,255,0.5),0_2px_8px_rgba(0,0,0,0.3)]"
                   : "opacity-0 group-hover:opacity-100 shadow-[0_0_10px_rgba(255,255,255,0.4),0_2px_6px_rgba(0,0,0,0.25)]"
@@ -133,7 +133,7 @@ export function PlayerProgressBar({
           {/* 发光尾迹 */}
           {displayProgress > 0 && displayProgress < 100 && (
             <div
-              className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full pointer-events-none"
+              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full pointer-events-none"
               style={{
                 left: `${displayProgress}%`,
                 background:

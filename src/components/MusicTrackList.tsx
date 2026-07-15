@@ -59,6 +59,7 @@ import { MusicTrack } from "@/types/music";
 import toast from "react-hot-toast";
 import { processBatchCPU } from "@/lib/utils";
 import { useShallow } from "zustand/react/shallow";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface MusicTrackListProps {
   tracks: MusicTrack[];
@@ -144,6 +145,7 @@ export function MusicTrackList({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isAddToPlaylistOpen, setIsAddToPlaylistOpen] = useState(false);
   const internalRef = useRef<HTMLDivElement | null>(null);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -249,7 +251,13 @@ export function MusicTrackList({
   const handleBatchRemove = async () => {
     if (!onRemove && !onBatchRemove) return;
     const count = selectedIds.size;
-    if (!confirm(`确定${removeLabel}选中的 ${count} 首歌曲吗？`)) return;
+    if (
+      !(await confirm({
+        title: `确定${removeLabel}选中的 ${count} 首歌曲吗？`,
+        variant: "destructive",
+      }))
+    )
+      return;
 
     const selected = getSelectedTracks();
     if (onBatchRemove) {
@@ -290,7 +298,7 @@ export function MusicTrackList({
     count: tracks.length + 1,
     getScrollElement: () => scrollContainerRef?.current ?? internalRef.current,
     estimateSize: () => ROW_HEIGHT,
-    overscan: 8,
+    overscan: 3,
   });
 
   if (tracks.length === 0 && !loading) {
@@ -303,7 +311,7 @@ export function MusicTrackList({
   }
 
   const renderHeader = () => (
-    <div className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+    <div className="sticky top-0 z-20 border-b bg-background/95">
       <div className="grid items-center gap-4 px-4 h-10 text-xs text-muted-foreground grid-cols-[1.75rem_1fr_auto]">
         {!isSelectionMode ? (
           <>
@@ -536,6 +544,7 @@ export function MusicTrackList({
         tracks={getSelectedTracks()}
         onDone={resetSelection}
       />
+      <ConfirmDialog />
     </div>
   );
 }

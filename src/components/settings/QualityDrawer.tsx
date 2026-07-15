@@ -14,9 +14,14 @@ import { QUALITY_OPTIONS } from "@/lib/utils/quality";
 interface QualityDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  compact?: boolean;
 }
 
-export function QualityDrawer({ open, onOpenChange }: QualityDrawerProps) {
+export function QualityDrawer({
+  open,
+  onOpenChange,
+  compact,
+}: QualityDrawerProps) {
   const quality = useMusicStore((s) => s.quality);
   const setQuality = useMusicStore((s) => s.setQuality);
 
@@ -26,7 +31,7 @@ export function QualityDrawer({ open, onOpenChange }: QualityDrawerProps) {
   };
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={onOpenChange} compact={compact}>
       <DrawerContent className="outline-none">
         <DrawerHeader className="px-5 pt-6 pb-2">
           <DrawerTitle className="text-lg font-semibold text-center">

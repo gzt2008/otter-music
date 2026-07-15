@@ -7,7 +7,7 @@ import {
   sourceBadgeStyles,
   sourceLabels,
 } from "@/types/music";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { toastUtils } from "@/lib/utils/toast";
 import toast from "react-hot-toast";
 import { useShallow } from "zustand/react/shallow";
@@ -74,7 +74,7 @@ interface MusicTrackItemProps {
   isSortable?: boolean;
 }
 
-export function MusicTrackItem({
+export const MusicTrackItem = memo(function MusicTrackItem({
   track,
   playlistId,
   index,
@@ -223,6 +223,7 @@ export function MusicTrackItem({
           track={track}
           playlistId={playlistId}
           open={isMobileMenuOpen}
+          compact
           onOpenChange={(open) => {
             setIsMobileMenuOpen(open);
           }}
@@ -263,4 +264,4 @@ export function MusicTrackItem({
       </div>
     </div>
   );
-}
+});

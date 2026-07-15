@@ -8,6 +8,7 @@ import { Copy, Edit, Trash2, Podcast, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MusicCover } from "@/components/MusicCover";
 import { ReactNode } from "react";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface PodcastActionDrawerProps {
   open: boolean;
@@ -43,6 +44,7 @@ export function PodcastActionDrawer({
   onEdit,
 }: PodcastActionDrawerProps) {
   const { removeRssSource } = usePodcastStore();
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const handleCopy = async () => {
     const ok = await writeClipboardText(rss.rssUrl);
@@ -54,8 +56,13 @@ export function PodcastActionDrawer({
     }
   };
 
-  const handleUnsubscribe = () => {
-    if (confirm(`确定要取消订阅 "${rss.name}" 吗？`)) {
+  const handleUnsubscribe = async () => {
+    if (
+      await confirm({
+        title: `确定要取消订阅 "${rss.name}" 吗？`,
+        variant: "destructive",
+      })
+    ) {
       removeRssSource(rss.id);
       toast.success("已取消订阅");
       onOpenChange(false);
@@ -111,6 +118,7 @@ export function PodcastActionDrawer({
           </ActionButton>
         </div>
       </DrawerContent>
+      <ConfirmDialog />
     </Drawer>
   );
 }

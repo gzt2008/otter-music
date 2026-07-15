@@ -44,6 +44,7 @@ import {
 import { useShallow } from "zustand/react/shallow";
 import toast from "react-hot-toast";
 import { useCoverColors } from "@/hooks/useCoverColors";
+import { useConfirm } from "@/hooks/useConfirm";
 import {
   pickBestColor,
   createBackgroundColor,
@@ -126,7 +127,7 @@ const BackgroundLayer = memo(
     }, [hasLiquidGlass, liquidColors]);
 
     return (
-      <div className="absolute inset-0 z-[-1] overflow-hidden bg-zinc-900">
+      <div className="absolute inset-0 z-[-1] overflow-hidden bg-transparent">
         {/* SVG 扭曲滤镜 — 液体玻璃折射 */}
         <svg className="absolute w-0 h-0" aria-hidden="true">
           <defs>
@@ -164,8 +165,8 @@ const BackgroundLayer = memo(
               className="absolute inset-[-48px] h-[calc(100%+96px)] w-[calc(100%+96px)] object-cover blur-[60px] scale-[1.15]"
             />
           )}
-          <div className="absolute inset-0 bg-black/25" />
-          <div className="absolute inset-0 bg-linear-to-b from-black/[0.03] via-zinc-950/[0.08] to-black/30" />
+          <div className="absolute inset-0 bg-black/15" />
+          <div className="absolute inset-0 bg-linear-to-b from-black/[0.02] via-zinc-950/[0.04] to-black/15" />
         </div>
 
         {/* 动态液体渐变层 — 三层叠加 + mix-blend */}
@@ -177,7 +178,7 @@ const BackgroundLayer = memo(
           style={
             {
               ...dynamicStyle,
-              opacity: showThemeColor ? 1 : hasLiquidGlass ? 0.85 : 0,
+              opacity: showThemeColor ? 0.4 : hasLiquidGlass ? 0.35 : 0,
             } as React.CSSProperties
           }
         />
@@ -186,7 +187,7 @@ const BackgroundLayer = memo(
             <div
               className="absolute inset-0 transition-opacity duration-[1500ms] ease-in-out"
               style={{
-                opacity: hasLiquidGlass ? 0.5 : 0,
+                opacity: hasLiquidGlass ? 0.25 : 0,
                 background: `linear-gradient(225deg,
                   hsla(${liquidColors[0][0] + 30}, ${liquidColors[0][1]}%, ${liquidColors[0][2] + 8}%, 0.4) 0%,
                   transparent 60%
@@ -197,7 +198,7 @@ const BackgroundLayer = memo(
             <div
               className="absolute inset-0 transition-opacity duration-[1500ms] ease-in-out"
               style={{
-                opacity: hasLiquidGlass ? 0.35 : 0,
+                opacity: hasLiquidGlass ? 0.2 : 0,
                 background: `radial-gradient(ellipse at 30% 70%,
                   hsla(${liquidColors[1][0] - 20}, ${liquidColors[1][1] + 10}%, ${liquidColors[1][2] + 10}%, 0.5) 0%,
                   transparent 70%
@@ -285,7 +286,7 @@ const BackgroundLayer = memo(
                 backdropFilter: "blur(3px)",
                 WebkitBackdropFilter: "blur(3px)",
                 filter: "url(#glass-distortion)",
-                opacity: 0.7,
+                opacity: 0.35,
               }}
             />
             {/* 色调层 — 半透明白色叠加 */}
@@ -293,7 +294,7 @@ const BackgroundLayer = memo(
               className="absolute inset-0 transition-opacity duration-[1500ms] ease-in-out"
               style={{
                 background: "rgba(255, 255, 255, 0.08)",
-                opacity: showThemeColor ? 1 : 0.6,
+                opacity: showThemeColor ? 0.4 : 0.25,
               }}
             />
             {/* 光泽层 — 内阴影模拟玻璃边缘高光 */}
@@ -302,7 +303,7 @@ const BackgroundLayer = memo(
               style={{
                 boxShadow:
                   "inset 2px 2px 1px 0 rgba(255, 255, 255, 0.12), inset -1px -1px 1px 1px rgba(255, 255, 255, 0.06)",
-                opacity: showThemeColor ? 1 : 0.5,
+                opacity: showThemeColor ? 0.35 : 0.2,
               }}
             />
           </>
@@ -414,10 +415,14 @@ export function FullScreenPlayer({
 
   const isMobile = useIsMobile();
 
+  const { confirm, ConfirmDialog } = useConfirm();
+
   const playTrack = (index: number) => setCurrentIndexAndPlay(index);
 
-  const handleClearQueue = () => {
-    if (confirm("确定要清空播放列表吗？")) {
+  const handleClearQueue = async () => {
+    if (
+      await confirm({ title: "确定要清空播放列表吗？", variant: "destructive" })
+    ) {
       clearQueue();
       toast.success("播放列表已清空");
     }
@@ -499,6 +504,7 @@ export function FullScreenPlayer({
           <>
             <MusicTrackMobileMenu
               track={currentTrack}
+              compact
               open={moreDrawerOpen}
               onOpenChange={setMoreDrawerOpen}
               onAddToPlaylist={() => setIsAddToPlaylistOpen(true)}
@@ -554,16 +560,6 @@ export function FullScreenPlayer({
           : "px-6 py-4"
       )}
     >
-      {/* 液体玻璃面板底衬 — 多层叠加 */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-white/[0.015] backdrop-blur-xl" />
-        <div className="absolute inset-0 bg-white/[0.01]" />
-        {/* 顶部高光线 — 模拟玻璃折射边缘 */}
-        <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
-        {/* 底部反射线 */}
-        <div className="absolute bottom-0 left-[15%] right-[15%] h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-        <div className="absolute inset-0 border-y border-white/[0.03]" />
-      </div>
       <Button
         variant="ghost"
         size="icon"
@@ -617,6 +613,7 @@ export function FullScreenPlayer({
         onReshuffle={reshuffle}
         onRemove={handleRemoveFromQueue}
         onPlayTrack={playTrackAsNext}
+        compact={!isMobile}
         trigger={
           <Button
             variant="ghost"
@@ -723,17 +720,21 @@ export function FullScreenPlayer({
 
   const drawers = (
     <>
+      <ConfirmDialog />
       <QualityDrawer
         open={qualityDrawerOpen}
         onOpenChange={setQualityDrawerOpen}
+        compact={!isMobile}
       />
       <PlaybackSpeedDrawer
         open={speedDrawerOpen}
         onOpenChange={setSpeedDrawerOpen}
+        compact={!isMobile}
       />
       <SleepTimerDrawer
         open={sleepDrawerOpen}
         onOpenChange={setSleepDrawerOpen}
+        compact={!isMobile}
       />
     </>
   );
@@ -743,8 +744,10 @@ export function FullScreenPlayer({
     return createPortal(
       <div
         className={cn(
-          "fixed inset-0 z-50 transition-transform duration-500 ease-in-out flex flex-col",
-          isFullScreen ? "translate-y-0" : "translate-y-full"
+          "fixed inset-0 z-50 transition-[transform,opacity] duration-[350ms] [ease cubic-bezier(0.32,0.72,0,1)] flex flex-col will-change-transform backdrop-blur-xl",
+          isFullScreen
+            ? "translate-y-0 opacity-100"
+            : "translate-y-full opacity-0"
         )}
       >
         <BackgroundLayer
@@ -796,11 +799,10 @@ export function FullScreenPlayer({
       <DialogContent
         showCloseButton={false}
         aria-describedby={undefined}
-        className="sm:max-w-[960px] h-[640px] p-0 bg-zinc-950/20 backdrop-blur-3xl overflow-hidden block gap-0"
+        overlayClassName="backdrop-blur-xl"
+        className="sm:max-w-[960px] h-[640px] p-0 bg-transparent border-0 shadow-none overflow-hidden block gap-0 rounded-2xl will-change-[transform,opacity]"
         style={{
-          boxShadow:
-            "0 30px 60px -15px rgba(0, 0, 0, 0.85), 0 0 100px -30px rgba(123, 47, 190, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 -1px 0 rgba(255, 255, 255, 0.02)",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
+          boxShadow: "none",
         }}
         onPointerDownOutside={(e) => e.preventDefault()}
       >

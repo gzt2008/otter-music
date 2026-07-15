@@ -129,11 +129,13 @@ interface PlaylistPreview {
 interface PlaylistImportDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  compact?: boolean;
 }
 
 export function PlaylistImportDrawer({
   open,
   onOpenChange,
+  compact,
 }: PlaylistImportDrawerProps) {
   const [url, setUrl] = useState("");
   const [phase, setPhase] = useState<Phase>("input");
@@ -349,7 +351,11 @@ export function PlaylistImportDrawer({
   };
 
   return (
-    <Drawer open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
+    <Drawer
+      open={open}
+      onOpenChange={(isOpen) => !isOpen && handleClose()}
+      compact={compact}
+    >
       <DrawerContent className="max-h-[92vh] outline-none overflow-hidden flex flex-col">
         <DrawerHeader className="pb-2">
           <DrawerTitle className="text-center text-lg font-bold">

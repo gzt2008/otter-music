@@ -36,21 +36,20 @@ export function MusicLayout({
 
       {/* Main Content */}
       <div className="flex-1 min-h-0 relative">
-        <div className={cn("h-full overflow-auto scrollbar-hide")}>
-          {children}
-        </div>
+        <div className={cn("h-full")}>{children}</div>
+        {/* Desktop: floating bottom player (absolute to enable backdrop-blur over content) */}
+        {!hidePlayer && isDesktop && (
+          <div className="absolute bottom-2 left-2 right-2 z-50">
+            <div className="rounded-2xl bg-background/40 backdrop-blur-xl border border-white/[0.08] shadow-lg overflow-hidden">
+              {player}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Now Playing Bar */}
-      {!hidePlayer && (
-        <div
-          className={cn(
-            "flex-none z-50 transition-all duration-300",
-            isDesktop
-              ? "relative border-t border-border/50 bg-background/95 backdrop-blur-xl"
-              : "absolute left-0 right-0 bottom-(--now-playing-safe-height)"
-          )}
-        >
+      {/* Now Playing Bar (mobile) */}
+      {!hidePlayer && !isDesktop && (
+        <div className="flex-none z-50 transition-all duration-300 absolute left-0 right-0 bottom-(--now-playing-safe-height)">
           {player}
         </div>
       )}

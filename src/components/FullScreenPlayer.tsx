@@ -3,6 +3,7 @@
 import { createPortal } from "react-dom";
 import { memo, useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import { WaveformCanvas } from "@/components/WaveformCanvas";
 import { cn } from "@/lib/utils";
 import { LyricsPanel } from "./LyricsPanel";
 import { MusicCover } from "./MusicCover";
@@ -784,6 +785,10 @@ export function FullScreenPlayer({
           </Button>
         </header>
         {coverSection}
+        {/* 音频波形可视化 */}
+        <div className="shrink-0 px-8 relative z-10 h-14">
+          <WaveformCanvas variant="full" className="w-full h-full" />
+        </div>
         <div className="shrink-0 px-8 py-4 relative z-10">{trackInfo}</div>
         <div className="shrink-0 px-8 relative z-10">{progressBar}</div>
         {controlButtons}
@@ -836,6 +841,10 @@ export function FullScreenPlayer({
           <div className="flex flex-col w-[420px] shrink-0 pr-6 py-6">
             <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
               {coverSection}
+            </div>
+            {/* 音频波形可视化 */}
+            <div className="shrink-0 px-6 h-10">
+              <WaveformCanvas variant="full" className="w-full h-full" />
             </div>
             <div className="shrink-0 px-6 mt-4">{trackInfo}</div>
             <div className="shrink-0 px-6">{progressBar}</div>

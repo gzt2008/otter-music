@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import type { MusicTrack } from "@/types/music";
 import { useConfirm } from "@/hooks/useConfirm";
+import { WaveformCanvas } from "./WaveformCanvas";
 
 interface MusicNowPlayingBarProps {
   onOpenFullScreen?: () => void;
@@ -258,6 +259,12 @@ export function MusicNowPlayingBar({
               </button>
             }
           />
+          {/* 音频波形迷你可视化 */}
+          {isPlaying && (
+            <div className="absolute bottom-0 left-0 right-0 h-4 pointer-events-none z-0">
+              <WaveformCanvas variant="mini" className="w-full h-full" />
+            </div>
+          )}
         </div>
       </div>
       <ConfirmDialog />

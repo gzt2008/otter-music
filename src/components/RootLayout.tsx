@@ -11,6 +11,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { App as CapacitorApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { useEffect, useCallback, useRef, lazy, Suspense } from "react";
+import { AudioAnalyzerProvider } from "@/hooks/useAudioAnalyzer";
+import { useAudioElement } from "@/hooks/useAudioElement";
 
 const FullScreenPlayer = lazy(() =>
   import("@/components/FullScreenPlayer").then((m) => ({
@@ -108,35 +110,39 @@ export function RootLayout() {
   const isTab = isRootTabPath(location.pathname);
   const isMobile = useIsMobile();
 
+  const audioRef = useAudioElement();
+
   return (
-    <>
-      <div className="flex h-dvh overflow-hidden bg-background">
-        {/* Desktop Sidebar */}
-        {!isMobile && <DesktopSidebar />}
+    <AudioAnalyzerProvider audioRef={audioRef}>
+      <>
+        <div className="flex h-dvh overflow-hidden bg-background">
+          {/* Desktop Sidebar */}
+          {!isMobile && <DesktopSidebar />}
 
-        <MusicLayout
-          hidePlayer={isFullScreenPlayer || !hasCurrentTrack}
-          isTab={isTab && isMobile}
-          player={
-            <MusicNowPlayingBar
-              onOpenFullScreen={() => setStoreFullScreen(true)}
-              isTab={isTab && isMobile}
-            />
-          }
-          tabBar={isMobile ? <MusicTabBar /> : undefined}
-        >
-          <Outlet />
-        </MusicLayout>
-      </div>
+          <MusicLayout
+            hidePlayer={isFullScreenPlayer || !hasCurrentTrack}
+            isTab={isTab && isMobile}
+            player={
+              <MusicNowPlayingBar
+                onOpenFullScreen={() => setStoreFullScreen(true)}
+                isTab={isTab && isMobile}
+              />
+            }
+            tabBar={isMobile ? <MusicTabBar /> : undefined}
+          >
+            <Outlet />
+          </MusicLayout>
+        </div>
 
-      <GlobalMusicPlayer />
+        <GlobalMusicPlayer audioRef={audioRef} />
 
-      <Suspense fallback={null}>
-        <FullScreenPlayer
-          isFullScreen={isFullScreenPlayer}
-          onClose={() => setStoreFullScreen(false)}
-        />
-      </Suspense>
-    </>
+        <Suspense fallback={null}>
+          <FullScreenPlayer
+            isFullScreen={isFullScreenPlayer}
+            onClose={() => setStoreFullScreen(false)}
+          />
+        </Suspense>
+      </>
+    </AudioAnalyzerProvider>
   );
 }

@@ -773,7 +773,7 @@ export function FullScreenPlayer({
             className="text-xs tracking-widest text-white/40 hover:text-white hover:bg-white/[0.08] h-8 px-3 rounded-lg bg-white/[0.04] backdrop-blur-sm border border-white/[0.06] transition-all duration-300"
             onClick={() => setQualityDrawerOpen(true)}
           >
-            {!showLyrics && getQualityShortLabel(quality)}
+            {getQualityShortLabel(quality)}
           </Button>
           <Button
             variant="ghost"

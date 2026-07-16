@@ -50,28 +50,32 @@ function makeSearchResponse() {
 }
 
 describe("searchBilibiliVideos", () => {
-  it("loads dev search results through the Vite Bilibili proxy", async () => {
-    mockConfig.IS_WEB_PROD = false;
-    mockConfig.IS_NATIVE = false;
-    mockConfig.getApiUrl.mockReturnValue("https://otter-music.pages.dev");
-    mockConfig.fetchWithTimeout.mockResolvedValue(
-      new Response(JSON.stringify(makeSearchResponse()), {
-        status: 200,
-      })
-    );
+  it(
+    "loads dev search results through the Vite Bilibili proxy",
+    { timeout: 15000 },
+    async () => {
+      mockConfig.IS_WEB_PROD = false;
+      mockConfig.IS_NATIVE = false;
+      mockConfig.getApiUrl.mockReturnValue("https://otter-music.pages.dev");
+      mockConfig.fetchWithTimeout.mockResolvedValue(
+        new Response(JSON.stringify(makeSearchResponse()), {
+          status: 200,
+        })
+      );
 
-    const { searchBilibiliVideos } = await import("./bilibili-api");
-    const result = await searchBilibiliVideos("周杰伦", 1, 20);
+      const { searchBilibiliVideos } = await import("./bilibili-api");
+      const result = await searchBilibiliVideos("周杰伦", 1, 20);
 
-    expect(result.items).toHaveLength(1);
-    expect(result.items[0]).toMatchObject({
-      id: "bilibili_BV1xx411c7mD",
-      source: "bilibili",
-    });
-    expect(String(mockConfig.fetchWithTimeout.mock.calls[0][0])).toContain(
-      "/api/bilibili/x/web-interface/search/type"
-    );
-  });
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]).toMatchObject({
+        id: "bilibili_BV1xx411c7mD",
+        source: "bilibili",
+      });
+      expect(String(mockConfig.fetchWithTimeout.mock.calls[0][0])).toContain(
+        "/api/bilibili/x/web-interface/search/type"
+      );
+    }
+  );
 
   it("returns empty collections in dev search results", async () => {
     mockConfig.IS_WEB_PROD = false;

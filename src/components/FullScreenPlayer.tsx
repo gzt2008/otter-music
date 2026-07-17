@@ -631,7 +631,7 @@ export function FullScreenPlayer({
   // Desktop: cover section shows static cover (no lyrics toggle — lyrics are in the right panel)
   const coverSection = (
     <div
-      className="flex-1 flex flex-col items-center justify-center px-2 relative z-10 overflow-hidden"
+      className="flex-1 flex flex-col items-center justify-center w-full px-2 relative z-10 overflow-hidden"
       onClick={isMobile ? () => setShowLyrics(!showLyrics) : undefined}
       style={isMobile ? { cursor: "pointer" } : undefined}
     >
@@ -643,10 +643,9 @@ export function FullScreenPlayer({
         <div
           className={cn(
             "relative flex items-center justify-center",
-            isMobile
-              ? "w-72 max-w-[320px] aspect-square"
-              : "w-64 max-w-[280px] aspect-square"
+            isMobile ? "aspect-square" : "w-64 max-w-[280px] aspect-square"
           )}
+          style={isMobile ? { height: "min(100%, 288px)" } : undefined}
         >
           {/* 黑胶唱片旋转环 — 改进纹理细节 */}
           <div

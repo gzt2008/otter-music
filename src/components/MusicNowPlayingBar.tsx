@@ -10,17 +10,17 @@ import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import type { MusicTrack } from "@/types/music";
 import { useConfirm } from "@/hooks/useConfirm";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { WaveformCanvas } from "./WaveformCanvas";
 
 interface MusicNowPlayingBarProps {
   onOpenFullScreen?: () => void;
-  isTab?: boolean;
 }
 
 export function MusicNowPlayingBar({
   onOpenFullScreen,
-  isTab = true,
 }: MusicNowPlayingBarProps) {
+  const isMobile = useIsMobile();
   const {
     isPlaying,
     currentAudioTime,
@@ -91,9 +91,9 @@ export function MusicNowPlayingBar({
 
   return (
     <>
-      <div className={cn(isTab ? "px-3" : "w-full")}>
+      <div className={cn(isMobile ? "px-3" : "w-full")}>
         {/* Desktop progress bar */}
-        {!isTab && duration > 0 && (
+        {!isMobile && duration > 0 && (
           <div className="h-[3px] w-full bg-white/[0.05]">
             <div
               className="h-full transition-[width] duration-300"
@@ -110,9 +110,10 @@ export function MusicNowPlayingBar({
         <div
           className={cn(
             "flex items-center backdrop-blur-xl transition-all duration-300 relative overflow-hidden",
-            isTab
-              ? "gap-2 px-2 py-1.5 rounded-2xl bg-white/[0.03] shadow-md border border-white/[0.06]"
-              : "gap-3 px-4 py-2.5"
+            isMobile
+              ? "rounded-2xl bg-white/[0.03] shadow-md border border-white/[0.06]"
+              : "",
+            isMobile ? "gap-2 px-2 py-1.5" : "gap-3 px-4 py-2.5"
           )}
         >
           {/* 液体玻璃顶部高光线 */}
@@ -126,7 +127,7 @@ export function MusicNowPlayingBar({
             <div
               className={cn(
                 "relative shrink-0 overflow-hidden rounded-xl transition-all duration-300 shadow-sm ring-1 ring-white/[0.08]",
-                isTab ? "h-8 w-8" : "h-11 w-11"
+                isMobile ? "h-8 w-8" : "h-11 w-11"
               )}
               style={{
                 boxShadow:
@@ -137,7 +138,7 @@ export function MusicNowPlayingBar({
                 src={coverUrl}
                 alt={currentTrack.name}
                 className="w-full h-full"
-                iconClassName={isTab ? "h-4 w-4" : "h-5 w-5"}
+                iconClassName={isMobile ? "h-4 w-4" : "h-5 w-5"}
               />
             </div>
 
@@ -146,7 +147,7 @@ export function MusicNowPlayingBar({
               <span
                 className={cn(
                   "font-medium text-foreground transition-all duration-300",
-                  isTab ? "text-sm" : "text-base"
+                  isMobile ? "text-sm" : "text-base"
                 )}
               >
                 {currentTrack.name}
@@ -154,7 +155,7 @@ export function MusicNowPlayingBar({
               <span
                 className={cn(
                   "text-muted-foreground truncate transition-all duration-300",
-                  isTab ? "text-xs" : "text-sm"
+                  isMobile ? "text-xs" : "text-sm"
                 )}
               >
                 - {currentTrack.artist?.join(", ")}
@@ -165,7 +166,7 @@ export function MusicNowPlayingBar({
             <div
               className={cn(
                 "relative shrink-0 transition-all duration-300 ml-2",
-                isTab ? "w-9 h-9" : "w-11 h-11"
+                isMobile ? "w-9 h-9" : "w-11 h-11"
               )}
             >
               {/* SVG 圆环进度 (利用 viewBox 自动等比缩放) */}
@@ -180,7 +181,7 @@ export function MusicNowPlayingBar({
                   r={radius}
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth={isTab ? "2" : "2.5"}
+                  strokeWidth={isMobile ? "2" : "2.5"}
                   className="text-white/10 transition-all duration-300"
                 />
                 {/* 进度圆环 - 从上方开始 */}
@@ -190,7 +191,7 @@ export function MusicNowPlayingBar({
                   r={radius}
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth={isTab ? "2" : "2.5"}
+                  strokeWidth={isMobile ? "2" : "2.5"}
                   strokeLinecap="round"
                   className="text-white/85 transition-[stroke-dashoffset] duration-300"
                   style={{
@@ -215,14 +216,14 @@ export function MusicNowPlayingBar({
                   <Pause
                     className={cn(
                       "fill-current transition-all duration-300",
-                      isTab ? "h-4 w-4" : "h-5 w-5"
+                      isMobile ? "h-4 w-4" : "h-5 w-5"
                     )}
                   />
                 ) : (
                   <Play
                     className={cn(
                       "fill-current ml-0.5 transition-all duration-300",
-                      isTab ? "h-4 w-4" : "h-5 w-5"
+                      isMobile ? "h-4 w-4" : "h-5 w-5"
                     )}
                   />
                 )}
@@ -246,14 +247,14 @@ export function MusicNowPlayingBar({
               <button
                 className={cn(
                   "text-muted-foreground hover:text-foreground transition-all shrink-0 focus:outline-none",
-                  isTab ? "p-1.5" : "p-2 ml-1"
+                  isMobile ? "p-1.5" : "p-2 ml-1"
                 )}
                 aria-label="播放列表"
               >
                 <ListVideo
                   className={cn(
                     "transition-all duration-300",
-                    isTab ? "h-4 w-4" : "h-[22px] w-[22px]"
+                    isMobile ? "h-4 w-4" : "h-[22px] w-[22px]"
                   )}
                 />
               </button>

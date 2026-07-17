@@ -125,7 +125,6 @@ export function RootLayout() {
             player={
               <MusicNowPlayingBar
                 onOpenFullScreen={() => setStoreFullScreen(true)}
-                isTab={isTab && isMobile}
               />
             }
             tabBar={isMobile ? <MusicTabBar /> : undefined}

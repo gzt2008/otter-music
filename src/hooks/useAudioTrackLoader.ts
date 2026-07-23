@@ -245,26 +245,28 @@ export function useAudioTrackLoader(
 
       const getRemoteUrl = async () => {
         if (remoteUrlRef.current) return remoteUrlRef.current;
-        // 离线时优先用缓存 URL，避免 API 调用失败
-        if (!navigator.onLine) {
-          const memCached = urlCache.get(trackKey);
-          if (memCached) {
-            // 用当前后端域名重新包装，避免死域名和 Mixed Content
-            const finalUrl = normalizeAudioUrlForPlayback(memCached);
-            urlCache.set(trackKey, finalUrl);
-            remoteUrlRef.current = finalUrl;
-            return finalUrl;
-          }
-          const offlineRecord = currentTrackId
-            ? useOfflineStore.getState().records?.[currentTrackId]
-            : null;
-          if (offlineRecord?.url) {
-            const finalUrl = normalizeAudioUrlForPlayback(offlineRecord.url);
-            urlCache.set(trackKey, finalUrl);
-            remoteUrlRef.current = finalUrl;
-            return finalUrl;
-          }
+
+        // 无论在线离线，优先使用已缓存的 URL，避免重复调 API 覆盖 SW 缓存
+        const memCached = urlCache.get(trackKey);
+        if (memCached) {
+          const finalUrl = normalizeAudioUrlForPlayback(memCached);
+          remoteUrlRef.current = finalUrl;
+          return finalUrl;
         }
+
+        const offlineRecord = currentTrackId
+          ? useOfflineStore.getState().records?.[currentTrackId]
+          : null;
+        if (offlineRecord?.url) {
+          const finalUrl = normalizeAudioUrlForPlayback(offlineRecord.url);
+          remoteUrlRef.current = finalUrl;
+          return finalUrl;
+        }
+
+        // 离线且无任何缓存时，返回空 URL（外部 catch 处理跳过逻辑）
+        if (!navigator.onLine) return "";
+
+        // 在线且无缓存时，调用 API 获取播放 URL
         const urlId =
           (currentTrackSource as string) === "local" ||
           currentTrackSource === "podcast"
@@ -468,6 +470,20 @@ export function useAudioTrackLoader(
 
         if (currentTrackSource) {
           useSourceQualityStore.getState().recordFail(currentTrackSource);
+        }
+
+        // 离线场景下清理已失效的缓存元数据
+        // SW audio-stream-cache 条目可能被 ExpirationPlugin 淘汰（maxEntries/maxAge）
+        // 但 offlineStore 和 urlCacheStore 中仍保留元数据，导致离线歌单反复尝试失效曲目
+        if (!navigator.onLine && currentTrackId && currentTrackSource) {
+          useOfflineStore.getState().removeRecord(currentTrackId);
+          const staleKey = buildUrlCacheKey(
+            currentTrackSource,
+            currentTrackId,
+            currentTrackUrlId,
+            quality
+          );
+          urlCache.delete(staleKey);
         }
 
         fallbackStageRef.current.stage = "final";
